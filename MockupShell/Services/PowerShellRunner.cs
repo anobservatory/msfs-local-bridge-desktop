@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -15,16 +15,7 @@ internal sealed class PowerShellRunner
 
     public async Task<PowerShellResult> RunAsync(string workingDirectory, string arguments, CancellationToken cancellationToken = default)
     {
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = _powerShellPath,
-            Arguments = arguments,
-            WorkingDirectory = workingDirectory,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
+        var startInfo = CreateStartInfo(workingDirectory, arguments, redirectIo: true, useShellExecute: false, createNoWindow: true);
 
         using var process = new Process { StartInfo = startInfo };
         var stdout = new StringBuilder();
@@ -47,16 +38,7 @@ internal sealed class PowerShellRunner
         Action<string> onOutput,
         Action<string> onError)
     {
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = _powerShellPath,
-            Arguments = arguments,
-            WorkingDirectory = workingDirectory,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
+        var startInfo = CreateStartInfo(workingDirectory, arguments, redirectIo: true, useShellExecute: false, createNoWindow: true);
 
         var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
         process.OutputDataReceived += (_, args) =>
@@ -82,14 +64,53 @@ internal sealed class PowerShellRunner
 
     public void StartElevated(string workingDirectory, string arguments)
     {
-        Process.Start(new ProcessStartInfo
+        Process.Start(CreateStartInfo(workingDirectory, arguments, redirectIo: false, useShellExecute: true, createNoWindow: false, verb: "runas"));
+    }
+
+    private ProcessStartInfo CreateStartInfo(
+        string workingDirectory,
+        string arguments,
+        bool redirectIo,
+        bool useShellExecute,
+        bool createNoWindow,
+        string? verb = null)
+    {
+        var startInfo = new ProcessStartInfo
         {
             FileName = _powerShellPath,
-            WorkingDirectory = workingDirectory,
             Arguments = arguments,
-            UseShellExecute = true,
-            Verb = "runas"
-        });
+            WorkingDirectory = workingDirectory,
+            RedirectStandardOutput = redirectIo,
+            RedirectStandardError = redirectIo,
+            UseShellExecute = useShellExecute,
+            CreateNoWindow = createNoWindow
+        };
+
+        if (!string.IsNullOrWhiteSpace(verb))
+        {
+            startInfo.Verb = verb;
+        }
+
+        if (!useShellExecute)
+        {
+            NormalizePathEnvironment(startInfo);
+        }
+
+        return startInfo;
+    }
+
+    private static void NormalizePathEnvironment(ProcessStartInfo startInfo)
+    {
+        var pathValue = Environment.GetEnvironmentVariable("Path")
+            ?? Environment.GetEnvironmentVariable("PATH")
+            ?? string.Empty;
+
+        if (startInfo.Environment.ContainsKey("PATH"))
+        {
+            startInfo.Environment.Remove("PATH");
+        }
+
+        startInfo.Environment["Path"] = pathValue;
     }
 }
 

@@ -33,6 +33,21 @@ public partial class MainWindow : Window
         };
         _refreshTimer.Tick += async (_, _) => await PublishStateAsync();
         Loaded += OnLoaded;
+        Closing += OnClosing;
+    }
+
+    private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+    {
+        _refreshTimer.Stop();
+
+        try
+        {
+            _sessionService.StopAsync().GetAwaiter().GetResult();
+        }
+        catch
+        {
+            // Best-effort cleanup during window shutdown.
+        }
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -244,3 +259,5 @@ internal sealed class WebMessageEnvelope
     public string Type { get; set; } = string.Empty;
     public string Action { get; set; } = string.Empty;
 }
+
+

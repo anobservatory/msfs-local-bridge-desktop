@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace MockupShell.Services;
@@ -62,9 +63,22 @@ internal sealed class BridgeSessionService
         }
 
         ResetFailureState();
-        AppendLog("bridge: starting run-bridge.ps1");
-        var arguments = $"-ExecutionPolicy Bypass -File \"{_workspace.BridgeScriptPath}\" -SkipLanHints";
-        var process = _runner.StartStreaming(_workspace.BridgeRepoRoot, arguments, AppendLog, line => AppendLog($"ERROR: {line}"));
+
+        var launchProfile = CreateLaunchProfile();
+        AppendLog($"bridge: starting run-bridge.ps1 ({launchProfile.ModeLabel})");
+        AppendLog($"bridge: payload root = {_workspace.BridgeRepoRoot}");
+        AppendLog($"bridge: payload source = {(_workspace.UsesBundledBridge ? "bundled" : "source repo")}");
+
+        if (!string.IsNullOrWhiteSpace(launchProfile.Note))
+        {
+            AppendLog(launchProfile.Note);
+        }
+
+        var process = _runner.StartStreaming(
+            _workspace.BridgeRepoRoot,
+            launchProfile.Arguments,
+            AppendLog,
+            line => AppendLog($"ERROR: {line}"));
         process.Exited += (_, _) => OnProcessExited(process);
         _process = process;
 
@@ -101,6 +115,72 @@ internal sealed class BridgeSessionService
         lock (_sync)
         {
             _runtimeLog.Clear();
+        }
+    }
+
+    private BridgeLaunchProfile CreateLaunchProfile()
+    {
+        var arguments = new StringBuilder();
+        arguments.Append("-ExecutionPolicy Bypass -File \"");
+        arguments.Append(_workspace.BridgeScriptPath);
+        arguments.Append("\" -SkipLanHints");
+
+        var supportsWorkerMode = ScriptSupportsWorkerMode(_workspace.BridgeScriptPath);
+        var workerExecutablePath = ResolveWorkerExecutablePath();
+
+        if (supportsWorkerMode && workerExecutablePath is not null)
+        {
+            arguments.Append(" -SimConnectMode worker -SimConnectWorkerPath \"");
+            arguments.Append(workerExecutablePath);
+            arguments.Append("\"");
+
+            return new BridgeLaunchProfile(
+                arguments.ToString(),
+                "mode=worker",
+                $"bridge: simconnect worker path = {workerExecutablePath}");
+        }
+
+        if (supportsWorkerMode)
+        {
+            return new BridgeLaunchProfile(
+                arguments.ToString(),
+                "mode=embedded",
+                "bridge: native SimConnect worker not found; continuing in embedded mode");
+        }
+
+        return new BridgeLaunchProfile(
+            arguments.ToString(),
+            "mode=embedded",
+            "bridge: bridge script does not support worker mode; continuing in embedded mode");
+    }
+
+    private string? ResolveWorkerExecutablePath()
+    {
+        var candidate = Path.Combine(
+            _workspace.BridgeRepoRoot,
+            "workers",
+            "simconnect-native",
+            "dist",
+            "msfs-simconnect-worker.exe");
+
+        return File.Exists(candidate) ? candidate : null;
+    }
+
+    private static bool ScriptSupportsWorkerMode(string scriptPath)
+    {
+        if (!File.Exists(scriptPath))
+        {
+            return false;
+        }
+
+        try
+        {
+            var script = File.ReadAllText(scriptPath);
+            return script.Contains("SimConnectMode", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -150,6 +230,16 @@ internal sealed class BridgeSessionService
             return "Bridge could not bind to the required port.";
         }
 
+        if (line.Contains("native SimConnect worker not found", StringComparison.OrdinalIgnoreCase))
+        {
+            return "SimConnect worker executable is missing.";
+        }
+
+        if (line.Contains("Worker executable not found", StringComparison.OrdinalIgnoreCase))
+        {
+            return "SimConnect worker executable is missing.";
+        }
+
         if (line.Contains("WSS is required but certificate files are missing", StringComparison.OrdinalIgnoreCase))
         {
             return "Secure mode certificate files are missing.";
@@ -175,6 +265,14 @@ internal sealed class BridgeSessionService
             return "Bridge could not bind to the required port.";
         }
 
+        if (runtimeLog.Contains("native SimConnect worker not found", StringComparison.OrdinalIgnoreCase)
+            || runtimeLog.Contains("Worker executable not found", StringComparison.OrdinalIgnoreCase))
+        {
+            return "SimConnect worker executable is missing.";
+        }
+
         return $"Bridge exited with code {exitCode}.";
     }
+
+    private sealed record BridgeLaunchProfile(string Arguments, string ModeLabel, string? Note);
 }

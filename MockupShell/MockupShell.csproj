@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -24,6 +24,10 @@
       <Link>bridge\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\..\msfs-local-bridge\workers\simconnect-native\dist\**\*">
+      <Link>bridge\workers\simconnect-native\dist\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\..\msfs-local-bridge\diagnostics-v0.ps1">
       <Link>bridge\diagnostics-v0.ps1</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -47,6 +51,9 @@
   </ItemGroup>
 
 </Project>
+
+
+
 
 
 

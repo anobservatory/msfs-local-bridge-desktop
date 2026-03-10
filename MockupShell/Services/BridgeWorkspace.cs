@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 
 namespace MockupShell.Services;
 
@@ -11,14 +11,31 @@ internal sealed class BridgeWorkspace
     public string DiagnosticsScriptPath { get; }
     public string CertSetupScriptPath { get; }
     public string RepairScriptPath { get; }
+    public bool UsesBundledBridge { get; }
 
     public BridgeWorkspace()
     {
         MockupRoot = Path.Combine(AppContext.BaseDirectory, "windows-host-onboarding-v1");
         MockupIndexPath = Path.Combine(MockupRoot, "index.html");
-        BridgeRepoRoot = ResolveBundledBridgeRoot()
-            ?? ResolveBridgeRepoRoot()
-            ?? throw new DirectoryNotFoundException("Could not find bridge payload.");
+
+        var sourceBridgeRoot = ResolveBridgeRepoRoot();
+        var bundledBridgeRoot = ResolveBundledBridgeRoot();
+
+        if (sourceBridgeRoot is not null)
+        {
+            BridgeRepoRoot = sourceBridgeRoot;
+            UsesBundledBridge = false;
+        }
+        else if (bundledBridgeRoot is not null)
+        {
+            BridgeRepoRoot = bundledBridgeRoot;
+            UsesBundledBridge = true;
+        }
+        else
+        {
+            throw new DirectoryNotFoundException("Could not find bridge payload.");
+        }
+
         BridgeScriptPath = Path.Combine(BridgeRepoRoot, "run-bridge.ps1");
         DiagnosticsScriptPath = Path.Combine(BridgeRepoRoot, "diagnostics-v0.ps1");
         CertSetupScriptPath = Path.Combine(BridgeRepoRoot, "setup-wss-cert-v0.ps1");
