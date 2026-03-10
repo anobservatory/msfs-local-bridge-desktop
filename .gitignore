@@ -1,0 +1,9 @@
+.appdata/
+.dotnet-cli-home/
+.nuget/
+working-build/
+.vs/
+**/bin/
+**/obj/
+*.suo
+*.user

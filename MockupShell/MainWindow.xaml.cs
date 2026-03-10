@@ -1,0 +1,246 @@
+using System.Diagnostics;
+using System.IO;
+using System.Text.Json;
+using System.Windows;
+using System.Windows.Threading;
+using Microsoft.Web.WebView2.Core;
+using MockupShell.Models;
+using MockupShell.Services;
+
+namespace MockupShell;
+
+public partial class MainWindow : Window
+{
+    private readonly BridgeWorkspace _workspace = new();
+    private readonly PowerShellRunner _powerShellRunner = new();
+    private readonly BridgeSessionService _sessionService;
+    private readonly BridgeDiagnosticsService _diagnosticsService;
+    private readonly PrerequisiteInstallerService _prerequisiteInstaller = new();
+    private readonly AppStateBuilder _stateBuilder = new();
+    private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
+    private readonly DispatcherTimer _refreshTimer;
+    private string _lastDiagnosticsJson = string.Empty;
+    private AppState _currentState = new();
+
+    public MainWindow()
+    {
+        InitializeComponent();
+        _sessionService = new BridgeSessionService(_workspace, _powerShellRunner);
+        _diagnosticsService = new BridgeDiagnosticsService(_workspace, _powerShellRunner);
+        _refreshTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(5)
+        };
+        _refreshTimer.Tick += async (_, _) => await PublishStateAsync();
+        Loaded += OnLoaded;
+    }
+
+    private async void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        if (!File.Exists(_workspace.MockupIndexPath))
+        {
+            MessageBox.Show(
+                $"Mockup file not found:\n{_workspace.MockupIndexPath}",
+                "MSFS Local Bridge",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            Close();
+            return;
+        }
+
+        var userDataFolder = Path.Combine(AppContext.BaseDirectory, ".webview2");
+        Directory.CreateDirectory(userDataFolder);
+
+        var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolder);
+        await MockupBrowser.EnsureCoreWebView2Async(environment);
+        MockupBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
+        MockupBrowser.CoreWebView2.Settings.AreDevToolsEnabled = true;
+        MockupBrowser.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
+        MockupBrowser.NavigationCompleted += async (_, _) => await PublishStateAsync();
+        MockupBrowser.Source = new Uri(_workspace.MockupIndexPath);
+        _refreshTimer.Start();
+    }
+
+    private async void OnWebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
+    {
+        var envelope = JsonSerializer.Deserialize<WebMessageEnvelope>(e.WebMessageAsJson, _jsonOptions);
+        if (envelope is null)
+        {
+            return;
+        }
+
+        if (string.Equals(envelope.Type, "ready", StringComparison.OrdinalIgnoreCase))
+        {
+            await PublishStateAsync();
+            return;
+        }
+
+        if (!string.Equals(envelope.Type, "action", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        try
+        {
+            await HandleActionAsync(envelope.Action);
+        }
+        catch (Exception ex)
+        {
+            await PostNotificationAsync($"Action failed: {ex.Message}");
+            await PublishStateAsync();
+        }
+    }
+
+    private async Task HandleActionAsync(string? action)
+    {
+        switch (action)
+        {
+            case "start-bridge":
+                await _sessionService.StartAsync();
+                break;
+            case "stop-bridge":
+                await _sessionService.StopAsync();
+                break;
+            case "restart-bridge":
+                await _sessionService.RestartAsync();
+                break;
+            case "copy-link":
+                Clipboard.SetText(_currentState.ConnectUrl);
+                await PostNotificationAsync("Copied secure connect URL.");
+                break;
+            case "copy-bootstrap-url":
+                Clipboard.SetText(_currentState.BootstrapUrl);
+                await PostNotificationAsync("Copied bootstrap URL.");
+                break;
+            case "copy-diagnostics":
+                Clipboard.SetText(_lastDiagnosticsJson);
+                await PostNotificationAsync("Copied diagnostics JSON.");
+                break;
+            case "copy-log":
+                Clipboard.SetText(_sessionService.RuntimeLog);
+                await PostNotificationAsync("Copied runtime log.");
+                break;
+            case "clear-log":
+                _sessionService.ClearLog();
+                break;
+            case "copy-mac-setup":
+                Clipboard.SetText($"curl -fsSL {_currentState.BootstrapUrl}/listener/mac.sh | bash");
+                await PostNotificationAsync("Copied Mac bootstrap command.");
+                break;
+            case "copy-windows-setup":
+                Clipboard.SetText($"powershell -ExecutionPolicy Bypass -Command \"iwr '{_currentState.BootstrapUrl}/listener/windows.ps1' -UseBasicParsing | iex\"");
+                await PostNotificationAsync("Copied Windows bootstrap command.");
+                break;
+            case "open-bootstrap-page":
+                OpenExternal(_currentState.BootstrapUrl);
+                break;
+            case "open-mobile-guide":
+                OpenExternal(_currentState.BootstrapUrl);
+                break;
+            case "install-dotnet":
+                await PostNotificationAsync(await _prerequisiteInstaller.InstallDotNetDesktopRuntimeAsync());
+                break;
+            case "install-vcredist":
+                await PostNotificationAsync(await _prerequisiteInstaller.InstallVcRedistAsync());
+                break;
+            case "setup-secure-mode":
+                await RunScriptAndNotifyAsync(_workspace.CertSetupScriptPath, "Secure mode setup completed.");
+                break;
+            case "open-firewall-rules":
+                _powerShellRunner.StartElevated(
+                    _workspace.BridgeRepoRoot,
+                    $"-ExecutionPolicy Bypass -Command \"& '{_workspace.RepairScriptPath}' -Action OpenFirewall39000 -Port 39000; & '{_workspace.RepairScriptPath}' -Action OpenFirewall39002 -Port 39002\"");
+                await PostNotificationAsync("Requested elevated firewall rule update.");
+                break;
+        }
+
+        await PublishStateAsync();
+    }
+
+    private async Task RunScriptAndNotifyAsync(string scriptPath, string successMessage)
+    {
+        var result = await _powerShellRunner.RunAsync(
+            _workspace.BridgeRepoRoot,
+            $"-ExecutionPolicy Bypass -File \"{scriptPath}\"",
+            CancellationToken.None);
+
+        if (result.ExitCode != 0)
+        {
+            throw new InvalidOperationException(string.IsNullOrWhiteSpace(result.StandardError) ? result.StandardOutput : result.StandardError);
+        }
+
+        await PostNotificationAsync(successMessage);
+    }
+
+    private async Task PublishStateAsync()
+    {
+        if (MockupBrowser.CoreWebView2 is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var (diagnostics, diagnosticsJson) = await _diagnosticsService.GetAsync();
+            var prerequisites = _prerequisiteInstaller.DetectStatus();
+            _lastDiagnosticsJson = diagnosticsJson;
+            _currentState = _stateBuilder.Build(diagnostics, diagnosticsJson, _sessionService, prerequisites);
+        }
+        catch (Exception ex)
+        {
+            _currentState = new AppState
+            {
+                BlockerText = "Diagnostics error",
+                SecureModeText = "Diagnostics unavailable",
+                DotNetStatus = "Unknown",
+                SimConnectStatus = "Unknown",
+                BridgeStatus = _sessionService.IsRunning ? "Running" : "Stopped",
+                BootstrapStatus = "Unavailable",
+                BridgeControlText = _sessionService.IsRunning ? "Running" : "Stopped",
+                PrimaryActionText = "Unavailable",
+                RuntimeLog = ex.Message,
+                LastIssue = ex.Message,
+                CanStartBridge = false,
+                CanStopBridge = _sessionService.IsRunning,
+                CanRestartBridge = _sessionService.IsRunning,
+                CanSetupSecureMode = false,
+                CanOpenFirewallRules = false
+            };
+        }
+
+        var payload = JsonSerializer.Serialize(new { type = "state", state = _currentState }, _jsonOptions);
+        MockupBrowser.CoreWebView2.PostWebMessageAsJson(payload);
+    }
+
+    private async Task PostNotificationAsync(string message)
+    {
+        if (MockupBrowser.CoreWebView2 is null)
+        {
+            return;
+        }
+
+        var payload = JsonSerializer.Serialize(new { type = "notification", message }, _jsonOptions);
+        MockupBrowser.CoreWebView2.PostWebMessageAsJson(payload);
+        await Task.CompletedTask;
+    }
+
+    private static void OpenExternal(string target)
+    {
+        if (string.IsNullOrWhiteSpace(target) || target == "Not available")
+        {
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = target,
+            UseShellExecute = true
+        });
+    }
+}
+
+internal sealed class WebMessageEnvelope
+{
+    public string Type { get; set; } = string.Empty;
+    public string Action { get; set; } = string.Empty;
+}
