@@ -201,7 +201,7 @@ pre {
 }
 
 .overview-grid {
-  grid-template-columns: 1.18fr 0.82fr;
+  grid-template-columns: 1fr 1fr;
   grid-template-areas:
     "bridge bridge"
     "host listener";
@@ -223,8 +223,7 @@ pre {
   grid-area: listener;
 }
 
-.setup-grid,
-.runtime-grid {
+.setup-grid {
   grid-template-columns: 0.96fr 1.04fr;
   align-items: stretch;
 }
@@ -604,6 +603,8 @@ code {
   max-height: 460px;
   overflow: auto;
 }
+
+
 
 
 
