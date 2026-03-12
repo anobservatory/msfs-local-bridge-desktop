@@ -521,3 +521,24 @@ code {
   overflow: auto;
 }
 
+
+.runtime-grid {
+  grid-template-columns: 1fr;
+}
+
+.runtime-log-card {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+}
+
+.runtime-grid .utility-row {
+  margin-top: 4px;
+  margin-bottom: 14px;
+}
+
+.log-view {
+  height: 460px;
+  min-height: 460px;
+  max-height: 460px;
+  overflow: auto;
+}

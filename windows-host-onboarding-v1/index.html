@@ -330,7 +330,7 @@
 
         <section class="tab-panel" data-panel="runtime">
           <div class="runtime-grid">
-            <section class="card tall-card">
+            <section class="card tall-card runtime-log-card">
               <div class="card-head">
                 <div>
                   <p class="section-label">Runtime Log</p>
@@ -344,25 +344,6 @@
                 <button class="secondary-btn" data-action="copy-diagnostics">Copy Diagnostics</button>
               </div>
               <pre class="log-view" id="runtime-log">[09:05:12] prerequisite-check: .NET Runtimes x64 not found</pre>
-            </section>
-
-            <section class="card tall-card support-card">
-              <div class="card-head">
-                <div>
-                  <p class="section-label">Recommended Order</p>
-                  <h2>How this product should flow</h2>
-                </div>
-              </div>
-              <ul class="bullet-list">
-                <li>Install .NET and VC++ on the host PC first.</li>
-                <li>Set up Secure Mode, then open Firewall Rules as admin.</li>
-                <li>Start the bridge only after the host is ready.</li>
-                <li>Use Windows listener setup from Administrator PowerShell.</li>
-                <li>On Mac and Mobile, trust the CA before opening the secure URL.</li>
-              </ul>
-              <div class="button-row small-gap diagnostics-row">
-                <button class="secondary-btn" data-action="copy-diagnostics">Copy Diagnostics</button>
-              </div>
             </section>
           </div>
         </section>
