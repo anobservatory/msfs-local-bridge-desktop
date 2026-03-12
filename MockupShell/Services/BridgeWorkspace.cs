@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 
 namespace MockupShell.Services;
 
@@ -18,18 +18,18 @@ internal sealed class BridgeWorkspace
         MockupRoot = Path.Combine(AppContext.BaseDirectory, "windows-host-onboarding-v1");
         MockupIndexPath = Path.Combine(MockupRoot, "index.html");
 
-        var sourceBridgeRoot = ResolveBridgeRepoRoot();
         var bundledBridgeRoot = ResolveBundledBridgeRoot();
+        var sourceBridgeRoot = ResolveBridgeRepoRoot();
 
-        if (sourceBridgeRoot is not null)
-        {
-            BridgeRepoRoot = sourceBridgeRoot;
-            UsesBundledBridge = false;
-        }
-        else if (bundledBridgeRoot is not null)
+        if (bundledBridgeRoot is not null)
         {
             BridgeRepoRoot = bundledBridgeRoot;
             UsesBundledBridge = true;
+        }
+        else if (sourceBridgeRoot is not null)
+        {
+            BridgeRepoRoot = sourceBridgeRoot;
+            UsesBundledBridge = false;
         }
         else
         {

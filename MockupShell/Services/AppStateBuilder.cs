@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using MockupShell.Models;
 
 namespace MockupShell.Services;
@@ -29,6 +29,9 @@ internal sealed class AppStateBuilder
         var firewallReady = firewallBridgeCheck?.Status == "pass" && firewallWssCheck?.Status == "pass";
         var portsAvailable = portBridgeCheck?.Status == "pass" && portWssCheck?.Status == "pass";
         var hasRequiredHostRuntime = prerequisites.HasRequiredDotNetRuntimes && prerequisites.HasVcRedist;
+        var bridgeStartReady = hasRequiredHostRuntime && secureModeReady && firewallReady;
+        var hasBootstrapAddress = bootstrapUrl != "Not available";
+        var listenerSetupReady = bridgeStartReady && session.IsRunning && hasBootstrapAddress;
         var issues = new List<string>();
         var startFailure = session.LastFailureReason;
         var hasStartFailure = !string.IsNullOrWhiteSpace(startFailure);
@@ -60,31 +63,42 @@ internal sealed class AppStateBuilder
             + (secureModeReady ? 0 : 1)
             + (firewallReady ? 0 : 1);
 
+        var bootstrapStatus = BuildBootstrapStatus(hasRequiredHostRuntime, secureModeReady, firewallReady, session.IsRunning, hasBootstrapAddress);
+        var startBridgeState = session.IsRunning ? "Running" : bridgeStartReady ? "Action" : "Locked";
+        var startBridgeNote = BuildStartBridgeNote(hasRequiredHostRuntime, secureModeReady, firewallReady, session.IsRunning, bootstrapUrl, hasStartFailure, startFailure);
+        var listenerSetupNote = BuildListenerSetupNote(hasRequiredHostRuntime, secureModeReady, firewallReady, session.IsRunning, hasBootstrapAddress);
+
         var bridgeStatus = session.IsRunning
             ? "Running"
             : hasStartFailure
                 ? "Start failed"
-                : portsAvailable
-                    ? "Stopped"
-                    : "Blocked";
+                : bridgeStartReady
+                    ? "Ready to start"
+                    : "Setup needed";
 
         var bridgeControlText = session.IsRunning
             ? "Running"
             : hasStartFailure
                 ? "Failed"
-                : "Stopped";
+                : bridgeStartReady
+                    ? "Ready"
+                    : "Setup needed";
 
         var primaryActionText = session.IsRunning
             ? "Bridge Running"
             : hasStartFailure
                 ? "Retry Start"
-                : "Start Bridge";
+                : bridgeStartReady
+                    ? "Start Bridge"
+                    : "Finish Setup";
 
         var simConnectStatus = session.IsRunning
             ? "Waiting for flight"
             : hasStartFailure
                 ? "Bridge failed"
-                : "Waiting for bridge";
+                : bridgeStartReady
+                    ? "Waiting for bridge"
+                    : "Finish setup";
 
         return new AppState
         {
@@ -93,7 +107,7 @@ internal sealed class AppStateBuilder
             DotNetStatus = prerequisites.DotNetRuntimeStatus,
             SimConnectStatus = simConnectStatus,
             BridgeStatus = bridgeStatus,
-            BootstrapStatus = bootstrapUrl == "Not available" ? "Unavailable" : "Ready",
+            BootstrapStatus = bootstrapStatus,
             BridgeControlText = bridgeControlText,
             PrimaryActionText = primaryActionText,
             HostIp = hostIp,
@@ -109,15 +123,113 @@ internal sealed class AppStateBuilder
             VcRedistButtonText = prerequisites.HasVcRedist ? "Installed" : "Install VC++ Runtime",
             VcRedistCurrentNote = prerequisites.HasVcRedist ? prerequisites.VcRedistStatus : "not installed on this PC.",
             SecureModeStepText = secureModeReady ? "Ready" : (hasRequiredHostRuntime ? "Action" : "Locked"),
-            FirewallStepText = firewallReady ? "Ready" : (hasRequiredHostRuntime ? "Action" : "Locked"),
-            CanStartBridge = !session.IsRunning && hasRequiredHostRuntime,
+            FirewallStepText = firewallReady ? "Ready" : (hasRequiredHostRuntime && secureModeReady ? "Action" : "Locked"),
+            StartBridgeStepText = startBridgeState,
+            StartBridgeButtonText = session.IsRunning ? "Bridge Running" : "Start Bridge",
+            StartBridgeCurrentNote = startBridgeNote,
+            ListenerSetupState = listenerSetupReady ? "Ready" : bootstrapStatus,
+            ListenerSetupNote = listenerSetupNote,
+            CanStartBridge = !session.IsRunning && bridgeStartReady,
             CanStopBridge = session.IsRunning,
             CanRestartBridge = session.IsRunning,
             CanInstallDotNet = !prerequisites.HasRequiredDotNetRuntimes,
             CanInstallVcRedist = !prerequisites.HasVcRedist,
             CanSetupSecureMode = hasRequiredHostRuntime,
-            CanOpenFirewallRules = hasRequiredHostRuntime
+            CanOpenFirewallRules = hasRequiredHostRuntime && secureModeReady,
+            CanUseListenerSetup = listenerSetupReady
         };
+    }
+
+    private static string BuildBootstrapStatus(bool hasRequiredHostRuntime, bool secureModeReady, bool firewallReady, bool bridgeRunning, bool hasBootstrapAddress)
+    {
+        if (!hasRequiredHostRuntime)
+        {
+            return "Install runtimes";
+        }
+
+        if (!secureModeReady)
+        {
+            return "Secure mode first";
+        }
+
+        if (!firewallReady)
+        {
+            return "Firewall first";
+        }
+
+        if (!bridgeRunning)
+        {
+            return "Start bridge first";
+        }
+
+        if (!hasBootstrapAddress)
+        {
+            return "LAN IP needed";
+        }
+
+        return "Ready";
+    }
+
+    private static string BuildStartBridgeNote(bool hasRequiredHostRuntime, bool secureModeReady, bool firewallReady, bool bridgeRunning, string bootstrapUrl, bool hasStartFailure, string? startFailure)
+    {
+        if (bridgeRunning)
+        {
+            return bootstrapUrl == "Not available"
+                ? "Bridge is running, but the host LAN address is not available yet."
+                : $"Bridge is running. Listener setup is available from {bootstrapUrl}.";
+        }
+
+        if (hasStartFailure)
+        {
+            return startFailure ?? "Bridge startup failed.";
+        }
+
+        if (!hasRequiredHostRuntime)
+        {
+            return "Install .NET and VC++ on this host PC first.";
+        }
+
+        if (!secureModeReady)
+        {
+            return "Generate secure mode certificates on this host PC before starting the bridge.";
+        }
+
+        if (!firewallReady)
+        {
+            return "Open firewall rules as Administrator on this host PC before starting the bridge.";
+        }
+
+        return "Start the bridge to serve the bootstrap page and listener setup scripts.";
+    }
+
+    private static string BuildListenerSetupNote(bool hasRequiredHostRuntime, bool secureModeReady, bool firewallReady, bool bridgeRunning, bool hasBootstrapAddress)
+    {
+        if (!hasRequiredHostRuntime)
+        {
+            return "Install .NET and VC++ on the host PC first.";
+        }
+
+        if (!secureModeReady)
+        {
+            return "On the host PC, finish Secure Mode before onboarding listener devices.";
+        }
+
+        if (!firewallReady)
+        {
+            return "On the host PC, open firewall rules as Administrator before onboarding listener devices.";
+        }
+
+        if (!bridgeRunning)
+        {
+            return "Start the bridge on the host PC before using any Mac, Windows, or mobile setup commands.";
+        }
+
+        if (!hasBootstrapAddress)
+        {
+            return "The host LAN address could not be detected yet, so listener bootstrap is unavailable.";
+        }
+
+        return "Host is ready. On Windows listeners, open Administrator PowerShell before running the copied setup command.";
     }
 
     private static int PriorityFor(string id)
@@ -165,12 +277,24 @@ internal sealed class AppStateBuilder
         }
 
         var start = markerIndex + marker.Length;
-        var end = message.IndexOf(' ', start);
+        var end = message.IndexOf(" (", start, StringComparison.Ordinal);
         if (end < 0)
         {
             end = message.Length;
         }
 
-        return message[start..end].Trim();
+        var candidates = message[start..end]
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        foreach (var candidate in candidates)
+        {
+            var normalized = candidate.Trim().TrimEnd('.', ';', ':', ')', ']');
+            if (IPAddress.TryParse(normalized, out _))
+            {
+                return normalized;
+            }
+        }
+
+        return null;
     }
 }

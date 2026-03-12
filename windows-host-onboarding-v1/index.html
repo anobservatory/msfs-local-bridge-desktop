@@ -33,8 +33,8 @@
           <strong id="status-bridge">Stopped</strong>
         </article>
         <article class="status-card">
-          <span>Bootstrap</span>
-          <strong id="status-bootstrap">Ready</strong>
+          <span>Listener Setup</span>
+          <strong id="status-bootstrap">Locked</strong>
         </article>
       </section>
 
@@ -50,10 +50,10 @@
             <section class="panel hero-panel">
               <div>
                 <p class="section-kicker">Daily Use</p>
-                <h2>Start the bridge and confirm the host is healthy.</h2>
+                <h2>Prepare the host once, then start the bridge and onboard devices.</h2>
                 <p class="body-copy">
-                  After first-run setup, most sessions should begin and end here. Keep the bridge
-                  button obvious and the connect handoff close by.
+                  The intended order is: install runtimes, set up secure mode, open firewall rules,
+                  start the bridge, then run listener setup on each device.
                 </p>
               </div>
               <div class="hero-actions">
@@ -96,19 +96,18 @@
                 <div class="panel-head">
                   <div>
                     <p class="section-kicker">Listener Handoff</p>
-                    <h3>Open on another device</h3>
+                    <h3>Use only after the bridge is running</h3>
                   </div>
                   <div class="pill">Same Wi-Fi</div>
                 </div>
                 <p class="label">Secure connect URL</p>
                 <code id="secure-connect-url">https://anobservatory.com/?msfsBridgeUrl=wss%3A%2F%2F192.168.0.24%3A39002%2Fstream</code>
                 <div class="hero-actions compact-actions">
-                  <button class="primary" data-action="copy-link">Copy Link</button>
-                  <button data-action="copy-bootstrap-url">Copy Bootstrap URL</button>
+                  <button class="primary" data-action="copy-link" id="copy-link-button">Copy Link</button>
+                  <button data-action="copy-bootstrap-url" id="copy-bootstrap-url-button">Copy Bootstrap URL</button>
                 </div>
-                <div class="inline-note device-note">
-                  <strong>First time on MacBook or mobile?</strong> Open the bootstrap page first for
-                  device-specific certificate steps, then open the connect URL.
+                <div class="inline-note device-note" id="listener-handoff-note">
+                  Start the bridge on the host PC before using any listener bootstrap actions.
                 </div>
               </section>
             </section>
@@ -119,17 +118,28 @@
               <div class="panel-head">
                 <div>
                   <p class="section-kicker">First Run</p>
-                  <h2>Prepare this PC</h2>
+                  <h2>Prepare the host PC in this order</h2>
                 </div>
-                <div class="pill warn">Needs attention</div>
+                <div class="pill warn">Host setup</div>
+              </div>
+
+              <div class="setup-intro">
+                <p class="body-copy">
+                  Follow the host steps first. Listener setup should happen only after Secure Mode,
+                  Firewall, and Start Bridge are complete.
+                </p>
+                <div class="phase-strip">
+                  <div class="phase-chip">Host PC: .NET -> VC++ -> Secure Mode -> Firewall (Admin) -> Start Bridge</div>
+                  <div class="phase-chip accent-chip">Listener PCs: Run device setup only after the bridge is live</div>
+                </div>
               </div>
 
               <div class="step-list">
                 <article class="step done">
                   <div class="step-index">1</div>
                   <div class="step-body">
-                    <h3>Bridge files and ports</h3>
-                    <p>SimConnect DLLs present. Bridge files OK. Required ports available.</p>
+                    <h3>Bridge files and diagnostics</h3>
+                    <p>Bridge payload, SimConnect DLLs, and required ports are present.</p>
                   </div>
                   <div class="step-side">
                     <span class="state ok">Passed</span>
@@ -141,7 +151,7 @@
                   <div class="step-index">2</div>
                   <div class="step-body">
                     <h3>.NET Runtimes x64</h3>
-                    <p>Required for the Windows host app and bundled bridge runtime. Install this before bridge startup.</p>
+                    <p>Required for the Windows host app and the bundled bridge runtime.</p>
                     <div class="inline-note">
                       <strong>Current:</strong> <span id="dotnet-current-note">not installed on this PC.</span>
                     </div>
@@ -156,7 +166,7 @@
                   <div class="step-index">3</div>
                   <div class="step-body">
                     <h3>VC++ Redistributable x64</h3>
-                    <p>Required for native bridge dependencies including SimConnect runtime pieces.</p>
+                    <p>Required for native bridge dependencies, including SimConnect runtime pieces.</p>
                     <div class="inline-note">
                       <strong>Current:</strong> <span id="vcredist-current-note">not installed on this PC.</span>
                     </div>
@@ -170,8 +180,8 @@
                 <article class="step">
                   <div class="step-index">4</div>
                   <div class="step-body">
-                    <h3>Secure mode</h3>
-                    <p>Generate local WSS certificate and trust material for browser-safe connection.</p>
+                    <h3>Set Up Secure Mode</h3>
+                    <p>Generate the local WSS certificate and root trust material on this host PC.</p>
                   </div>
                   <div class="step-side">
                     <span class="state muted" id="secure-mode-state">Locked</span>
@@ -179,15 +189,33 @@
                   </div>
                 </article>
 
-                <article class="step">
+                <article class="step requires-admin-step">
                   <div class="step-index">5</div>
                   <div class="step-body">
-                    <h3>Firewall</h3>
-                    <p>Open only the required inbound rules for local bridge access.</p>
+                    <h3>Open Firewall Rules</h3>
+                    <p>Allow inbound access to the bridge only on the required ports.</p>
+                    <div class="inline-note admin-note">
+                      <strong>Administrator required:</strong> Windows will prompt for elevation on the host PC.
+                    </div>
                   </div>
                   <div class="step-side">
                     <span class="state muted" id="firewall-state">Locked</span>
                     <button data-action="open-firewall-rules" id="open-firewall-rules-button">Open Firewall Rules</button>
+                  </div>
+                </article>
+
+                <article class="step">
+                  <div class="step-index">6</div>
+                  <div class="step-body">
+                    <h3>Start Bridge</h3>
+                    <p>Start the host service so the bootstrap page and listener scripts become available.</p>
+                    <div class="inline-note">
+                      <strong>Current:</strong> <span id="start-bridge-current-note">Complete host setup before starting the bridge.</span>
+                    </div>
+                  </div>
+                  <div class="step-side">
+                    <span class="state muted" id="start-bridge-step-state">Locked</span>
+                    <button class="primary" data-action="start-bridge" id="setup-start-bridge-button">Start Bridge</button>
                   </div>
                 </article>
               </div>
@@ -196,38 +224,45 @@
             <section class="panel listener-guide-panel">
               <div class="panel-head">
                 <div>
-                  <p class="section-kicker">Listener Devices</p>
-                  <h2>Certificate and bootstrap guide</h2>
+                  <p class="section-kicker">After Host Setup</p>
+                  <h2>Onboard listener devices</h2>
                 </div>
-                <div class="pill">One-time per device</div>
+                <div class="pill" id="listener-readiness-pill">Locked</div>
+              </div>
+
+              <p class="body-copy">
+                Only use the listener setup commands after the host PC is ready and the bridge is already running.
+              </p>
+              <div class="inline-note" id="listener-setup-note">
+                Complete host setup and start the bridge before onboarding listener devices.
               </div>
 
               <div class="guide-grid">
+                <article class="guide-card requires-admin-card">
+                  <p class="label">Step 7 - Windows listener</p>
+                  <h3>Run PowerShell as Administrator</h3>
+                  <p>Use Administrator PowerShell on the listener PC, then paste the copied setup command.</p>
+                  <div class="hero-actions compact-actions">
+                    <button data-action="copy-windows-setup" id="copy-windows-setup-button">Copy Windows Setup</button>
+                  </div>
+                </article>
+
                 <article class="guide-card">
-                  <p class="label">MacBook</p>
-                  <h3>Run bootstrap first</h3>
+                  <p class="label">Step 7 - MacBook</p>
+                  <h3>Run bootstrap from Terminal</h3>
                   <p>Download the root CA, trust it in macOS, then open the AO connect URL.</p>
                   <div class="hero-actions compact-actions">
-                    <button class="primary" data-action="copy-mac-setup">Copy Mac Setup Command</button>
-                    <button data-action="open-bootstrap-page">Open Bootstrap Page</button>
+                    <button class="primary" data-action="copy-mac-setup" id="copy-mac-setup-button">Copy Mac Setup Command</button>
+                    <button data-action="open-bootstrap-page" id="open-bootstrap-page-button">Open Bootstrap Page</button>
                   </div>
                 </article>
 
                 <article class="guide-card">
-                  <p class="label">Windows Listener</p>
-                  <h3>Use PowerShell bootstrap</h3>
-                  <p>Import the root CA into the current user trust store and apply host mapping when needed.</p>
+                  <p class="label">Step 7 - Mobile</p>
+                  <h3>Open the bootstrap page first</h3>
+                  <p>Download and trust the root certificate manually, then open AO with the secure bridge URL.</p>
                   <div class="hero-actions compact-actions">
-                    <button data-action="copy-windows-setup">Copy Windows Setup</button>
-                  </div>
-                </article>
-
-                <article class="guide-card">
-                  <p class="label">Mobile</p>
-                  <h3>Manual trust steps</h3>
-                  <p>Open the bootstrap page, download the root certificate, trust it manually, then open AO.</p>
-                  <div class="hero-actions compact-actions">
-                    <button data-action="open-mobile-guide">Open Mobile Guide</button>
+                    <button data-action="open-mobile-guide" id="open-mobile-guide-button">Open Mobile Guide</button>
                   </div>
                 </article>
               </div>
@@ -242,7 +277,7 @@
                     <p class="section-kicker">Runtime</p>
                     <h2>Bridge log and support</h2>
                   </div>
-                  <div class="pill ok">Stopped</div>
+                  <div class="pill ok">Runtime</div>
                 </div>
                 <div class="hero-actions compact-actions">
                   <button class="primary" data-action="copy-log">Copy Log</button>
@@ -260,23 +295,30 @@
               <section class="panel events-panel">
                 <div class="panel-head">
                   <div>
-                    <p class="section-kicker">Recent Events</p>
-                    <h2>What changed</h2>
+                    <p class="section-kicker">Setup Map</p>
+                    <h2>Recommended order</h2>
                   </div>
                 </div>
                 <div class="timeline">
-                  <article class="event warn-event">
-                    <span class="event-time">09:05</span>
+                  <article class="event ok-event">
+                    <span class="event-time">Host</span>
                     <div>
-                      <h3>.NET Desktop Runtime not found</h3>
-                      <p>Install runtime before secure setup and bridge start.</p>
+                      <h3>Install .NET and VC++</h3>
+                      <p>These must be in place before Secure Mode and bridge start.</p>
+                    </div>
+                  </article>
+                  <article class="event warn-event">
+                    <span class="event-time">Host</span>
+                    <div>
+                      <h3>Secure Mode, Firewall, Start Bridge</h3>
+                      <p>Firewall is the admin-required host step before listener onboarding.</p>
                     </div>
                   </article>
                   <article class="event ok-event">
-                    <span class="event-time">09:07</span>
+                    <span class="event-time">Device</span>
                     <div>
-                      <h3>VC++ Redistributable detected</h3>
-                      <p>Native dependency is already satisfied.</p>
+                      <h3>Run listener setup last</h3>
+                      <p>On Windows listeners, open Administrator PowerShell before pasting the setup command.</p>
                     </div>
                   </article>
                 </div>

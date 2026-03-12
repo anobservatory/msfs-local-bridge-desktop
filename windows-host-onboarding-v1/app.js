@@ -1,4 +1,4 @@
-﻿const tabs = Array.from(document.querySelectorAll('.tab-btn'));
+const tabs = Array.from(document.querySelectorAll('.tab-btn'));
 const panels = Array.from(document.querySelectorAll('.tab-panel'));
 const actionButtons = Array.from(document.querySelectorAll('[data-action]'));
 
@@ -68,15 +68,28 @@ function applyState(state) {
   setText('install-vcredist-button', state.vcRedistButtonText);
   setText('secure-mode-state', state.secureModeStepText);
   setText('firewall-state', state.firewallStepText);
+  setText('start-bridge-step-state', state.startBridgeStepText);
+  setText('setup-start-bridge-button', state.startBridgeButtonText);
+  setText('start-bridge-current-note', state.startBridgeCurrentNote);
+  setText('listener-readiness-pill', state.listenerSetupState);
+  setText('listener-setup-note', state.listenerSetupNote);
+  setText('listener-handoff-note', state.listenerSetupNote);
   setText('runtime-log', state.runtimeLog);
 
   setDisabled('start-bridge-button', !state.canStartBridge);
+  setDisabled('setup-start-bridge-button', !state.canStartBridge);
   setDisabled('stop-bridge-button', !state.canStopBridge);
   setDisabled('restart-bridge-button', !state.canRestartBridge);
   setDisabled('install-dotnet-button', !state.canInstallDotNet);
   setDisabled('install-vcredist-button', !state.canInstallVcRedist);
   setDisabled('setup-secure-mode-button', !state.canSetupSecureMode);
   setDisabled('open-firewall-rules-button', !state.canOpenFirewallRules);
+  setDisabled('copy-link-button', !state.canUseListenerSetup);
+  setDisabled('copy-bootstrap-url-button', !state.canUseListenerSetup);
+  setDisabled('copy-mac-setup-button', !state.canUseListenerSetup);
+  setDisabled('open-bootstrap-page-button', !state.canUseListenerSetup);
+  setDisabled('copy-windows-setup-button', !state.canUseListenerSetup);
+  setDisabled('open-mobile-guide-button', !state.canUseListenerSetup);
 }
 
 if (window.chrome?.webview) {

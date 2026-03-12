@@ -7,7 +7,7 @@ internal sealed class AppState
     public string DotNetStatus { get; set; } = "Unknown";
     public string SimConnectStatus { get; set; } = "Unknown";
     public string BridgeStatus { get; set; } = "Stopped";
-    public string BootstrapStatus { get; set; } = "Unavailable";
+    public string BootstrapStatus { get; set; } = "Locked";
     public string BridgeControlText { get; set; } = "Stopped";
     public string PrimaryActionText { get; set; } = "Start Bridge";
     public string HostIp { get; set; } = "Not available";
@@ -24,6 +24,11 @@ internal sealed class AppState
     public string VcRedistCurrentNote { get; set; } = "not installed on this PC.";
     public string SecureModeStepText { get; set; } = "Locked";
     public string FirewallStepText { get; set; } = "Locked";
+    public string StartBridgeStepText { get; set; } = "Locked";
+    public string StartBridgeButtonText { get; set; } = "Start Bridge";
+    public string StartBridgeCurrentNote { get; set; } = "Complete host setup before starting the bridge.";
+    public string ListenerSetupState { get; set; } = "Locked";
+    public string ListenerSetupNote { get; set; } = "Complete host setup and start the bridge before onboarding listener devices.";
     public bool CanStartBridge { get; set; } = true;
     public bool CanStopBridge { get; set; }
     public bool CanRestartBridge { get; set; }
@@ -31,4 +36,5 @@ internal sealed class AppState
     public bool CanInstallVcRedist { get; set; } = true;
     public bool CanSetupSecureMode { get; set; } = true;
     public bool CanOpenFirewallRules { get; set; } = true;
+    public bool CanUseListenerSetup { get; set; }
 }
