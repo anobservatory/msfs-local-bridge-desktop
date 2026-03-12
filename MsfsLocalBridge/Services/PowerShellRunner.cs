@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace MockupShell.Services;
+namespace MsfsLocalBridge.Services;
 
 internal sealed class PowerShellRunner
 {
@@ -115,3 +115,4 @@ internal sealed class PowerShellRunner
 }
 
 internal sealed record PowerShellResult(int ExitCode, string StandardOutput, string StandardError);
+

@@ -4,10 +4,10 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
-using MockupShell.Models;
-using MockupShell.Services;
+using MsfsLocalBridge.Models;
+using MsfsLocalBridge.Services;
 
-namespace MockupShell;
+namespace MsfsLocalBridge;
 
 public partial class MainWindow : Window
 {
@@ -52,10 +52,10 @@ public partial class MainWindow : Window
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (!File.Exists(_workspace.MockupIndexPath))
+        if (!File.Exists(_workspace.HostConsoleIndexPath))
         {
             MessageBox.Show(
-                $"Mockup file not found:\n{_workspace.MockupIndexPath}",
+                $"Host console file not found:\n{_workspace.HostConsoleIndexPath}",
                 "MSFS Local Bridge",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
@@ -67,13 +67,13 @@ public partial class MainWindow : Window
         Directory.CreateDirectory(userDataFolder);
 
         var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolder);
-        await MockupBrowser.EnsureCoreWebView2Async(environment);
-        MockupBrowser.DefaultBackgroundColor = System.Drawing.Color.FromArgb(7, 16, 26);
-        MockupBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
-        MockupBrowser.CoreWebView2.Settings.AreDevToolsEnabled = true;
-        MockupBrowser.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
-        MockupBrowser.NavigationCompleted += async (_, _) => await PublishStateAsync();
-        MockupBrowser.Source = new Uri(_workspace.MockupIndexPath);
+        await AppBrowser.EnsureCoreWebView2Async(environment);
+        AppBrowser.DefaultBackgroundColor = System.Drawing.Color.FromArgb(7, 16, 26);
+        AppBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
+        AppBrowser.CoreWebView2.Settings.AreDevToolsEnabled = true;
+        AppBrowser.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
+        AppBrowser.NavigationCompleted += async (_, _) => await PublishStateAsync();
+        AppBrowser.Source = new Uri(_workspace.HostConsoleIndexPath);
         _refreshTimer.Start();
     }
 
@@ -190,7 +190,7 @@ public partial class MainWindow : Window
 
     private async Task PublishStateAsync()
     {
-        if (MockupBrowser.CoreWebView2 is null)
+        if (AppBrowser.CoreWebView2 is null)
         {
             return;
         }
@@ -225,18 +225,18 @@ public partial class MainWindow : Window
         }
 
         var payload = JsonSerializer.Serialize(new { type = "state", state = _currentState }, _jsonOptions);
-        MockupBrowser.CoreWebView2.PostWebMessageAsJson(payload);
+        AppBrowser.CoreWebView2.PostWebMessageAsJson(payload);
     }
 
     private async Task PostNotificationAsync(string message)
     {
-        if (MockupBrowser.CoreWebView2 is null)
+        if (AppBrowser.CoreWebView2 is null)
         {
             return;
         }
 
         var payload = JsonSerializer.Serialize(new { type = "notification", message }, _jsonOptions);
-        MockupBrowser.CoreWebView2.PostWebMessageAsJson(payload);
+        AppBrowser.CoreWebView2.PostWebMessageAsJson(payload);
         await Task.CompletedTask;
     }
 
@@ -260,6 +260,7 @@ internal sealed class WebMessageEnvelope
     public string Type { get; set; } = string.Empty;
     public string Action { get; set; } = string.Empty;
 }
+
 
 
 

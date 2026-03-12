@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace MockupShell.Models;
+namespace MsfsLocalBridge.Models;
 
 internal sealed class DiagnosticsResult
 {

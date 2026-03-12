@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <AssemblyName>MsfsLocalBridge</AssemblyName>
+    <RootNamespace>MsfsLocalBridge</RootNamespace>
+    <Product>MSFS Local Bridge</Product>
   </PropertyGroup>
 
   <ItemGroup>
@@ -51,6 +54,8 @@
   </ItemGroup>
 
 </Project>
+
+
 
 
 

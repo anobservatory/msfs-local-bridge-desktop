@@ -1,7 +1,7 @@
 using System.Net;
-using MockupShell.Models;
+using MsfsLocalBridge.Models;
 
-namespace MockupShell.Services;
+namespace MsfsLocalBridge.Services;
 
 internal sealed class AppStateBuilder
 {
@@ -298,3 +298,4 @@ internal sealed class AppStateBuilder
         return null;
     }
 }
+

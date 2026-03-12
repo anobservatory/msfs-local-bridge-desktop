@@ -1,8 +1,8 @@
-﻿using System.Configuration;
+using System.Configuration;
 using System.Data;
 using System.Windows;
 
-namespace MockupShell;
+namespace MsfsLocalBridge;
 
 /// <summary>
 /// Interaction logic for App.xaml
@@ -10,4 +10,5 @@ namespace MockupShell;
 public partial class App : Application
 {
 }
+
 

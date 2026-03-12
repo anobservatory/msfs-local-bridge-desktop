@@ -1,10 +1,10 @@
-﻿# Windows Host Onboarding Mockup v2
+# Windows Host Onboarding
 
 Location: `lab/windows-host-onboarding-v1`
 
 ## Purpose
 
-This mockup shifts from a crowded single-page console to a tabbed host app.
+This host console UI shifts from a crowded single-page console to a tabbed desktop app.
 
 ## Layout
 

@@ -1,11 +1,11 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using Microsoft.Win32;
-using MockupShell.Models;
+using MsfsLocalBridge.Models;
 
-namespace MockupShell.Services;
+namespace MsfsLocalBridge.Services;
 
 internal sealed class PrerequisiteInstallerService
 {
@@ -181,3 +181,4 @@ internal sealed class PrerequisiteInstallerService
         });
     }
 }
+

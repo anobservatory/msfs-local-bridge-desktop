@@ -1,4 +1,4 @@
-<Window x:Class="MockupShell.MainWindow"
+<Window x:Class="MsfsLocalBridge.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -13,6 +13,7 @@
         WindowStartupLocation="CenterScreen"
         Background="#07101A">
     <Grid>
-        <wv2:WebView2 x:Name="MockupBrowser" />
+        <wv2:WebView2 x:Name="AppBrowser" />
     </Grid>
 </Window>
+

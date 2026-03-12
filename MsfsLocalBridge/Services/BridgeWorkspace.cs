@@ -1,11 +1,11 @@
 using System.IO;
 
-namespace MockupShell.Services;
+namespace MsfsLocalBridge.Services;
 
 internal sealed class BridgeWorkspace
 {
-    public string MockupRoot { get; }
-    public string MockupIndexPath { get; }
+    public string HostConsoleRoot { get; }
+    public string HostConsoleIndexPath { get; }
     public string BridgeRepoRoot { get; }
     public string BridgeScriptPath { get; }
     public string DiagnosticsScriptPath { get; }
@@ -15,8 +15,8 @@ internal sealed class BridgeWorkspace
 
     public BridgeWorkspace()
     {
-        MockupRoot = Path.Combine(AppContext.BaseDirectory, "windows-host-onboarding-v1");
-        MockupIndexPath = Path.Combine(MockupRoot, "index.html");
+        HostConsoleRoot = Path.Combine(AppContext.BaseDirectory, "windows-host-onboarding-v1");
+        HostConsoleIndexPath = Path.Combine(HostConsoleRoot, "index.html");
 
         var bundledBridgeRoot = ResolveBundledBridgeRoot();
         var sourceBridgeRoot = ResolveBridgeRepoRoot();
@@ -73,3 +73,4 @@ internal sealed class BridgeWorkspace
             && File.Exists(Path.Combine(candidate, "diagnostics-v0.ps1"));
     }
 }
+

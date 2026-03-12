@@ -1,4 +1,4 @@
-namespace MockupShell.Models;
+namespace MsfsLocalBridge.Models;
 
 internal sealed class PrerequisiteStatus
 {
@@ -11,3 +11,4 @@ internal sealed class PrerequisiteStatus
     public string VcRedistStatus { get; set; } = "Missing";
     public bool HasVcRedist { get; set; }
 }
+

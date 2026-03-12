@@ -1,7 +1,7 @@
 using System.Text.Json;
-using MockupShell.Models;
+using MsfsLocalBridge.Models;
 
-namespace MockupShell.Services;
+namespace MsfsLocalBridge.Services;
 
 internal sealed class BridgeDiagnosticsService
 {

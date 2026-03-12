@@ -1,8 +1,8 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace MockupShell.Services;
+namespace MsfsLocalBridge.Services;
 
 internal sealed class BridgeSessionService
 {
@@ -276,3 +276,4 @@ internal sealed class BridgeSessionService
 
     private sealed record BridgeLaunchProfile(string Arguments, string ModeLabel, string? Note);
 }
+

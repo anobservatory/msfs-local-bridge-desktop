@@ -1,4 +1,4 @@
-namespace MockupShell.Models;
+namespace MsfsLocalBridge.Models;
 
 internal sealed class AppState
 {
@@ -38,3 +38,4 @@ internal sealed class AppState
     public bool CanOpenFirewallRules { get; set; } = true;
     public bool CanUseListenerSetup { get; set; }
 }
+
