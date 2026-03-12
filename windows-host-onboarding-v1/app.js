@@ -40,6 +40,12 @@ function setText(id, value) {
   }
 }
 
+function setTextAll(ids, value) {
+  for (const id of ids) {
+    setText(id, value);
+  }
+}
+
 function setDisabled(id, disabled) {
   const element = document.getElementById(id);
   if (element) {
@@ -47,11 +53,17 @@ function setDisabled(id, disabled) {
   }
 }
 
+function setDisabledAll(ids, disabled) {
+  for (const id of ids) {
+    setDisabled(id, disabled);
+  }
+}
+
 function applyState(state) {
   setText('blocker-pill', state.blockerText);
   setText('secure-mode-pill', state.secureModeText);
   setText('status-dotnet', state.dotNetStatus);
-  setText('status-simconnect', state.simConnectStatus);
+  setTextAll(['status-simconnect', 'simconnect-detail'], state.simConnectStatus);
   setText('status-bridge', state.bridgeStatus);
   setText('status-bootstrap', state.bootstrapStatus);
   setText('bridge-control-pill', state.bridgeControlText);
@@ -60,18 +72,18 @@ function applyState(state) {
   setText('secure-stream', state.secureStream);
   setText('last-issue', state.lastIssue);
   setText('secure-connect-url', state.connectUrl);
-  setText('dotnet-step-state', state.dotNetStepText);
+  setTextAll(['dotnet-step-state', 'dotnet-step-state-copy'], state.dotNetStepText);
   setText('dotnet-current-note', state.dotNetCurrentNote);
   setText('install-dotnet-button', state.dotNetButtonText);
-  setText('vcredist-step-state', state.vcRedistStepText);
+  setTextAll(['vcredist-step-state', 'vcredist-step-state-copy'], state.vcRedistStepText);
   setText('vcredist-current-note', state.vcRedistCurrentNote);
   setText('install-vcredist-button', state.vcRedistButtonText);
-  setText('secure-mode-state', state.secureModeStepText);
-  setText('firewall-state', state.firewallStepText);
-  setText('start-bridge-step-state', state.startBridgeStepText);
+  setTextAll(['secure-mode-state', 'secure-mode-state-copy'], state.secureModeStepText);
+  setTextAll(['firewall-state', 'firewall-state-copy'], state.firewallStepText);
+  setTextAll(['start-bridge-step-state', 'start-bridge-step-state-copy'], state.startBridgeStepText);
   setText('setup-start-bridge-button', state.startBridgeButtonText);
   setText('start-bridge-current-note', state.startBridgeCurrentNote);
-  setText('listener-readiness-pill', state.listenerSetupState);
+  setTextAll(['listener-readiness-pill', 'listener-readiness-pill-copy'], state.listenerSetupState);
   setText('listener-setup-note', state.listenerSetupNote);
   setText('listener-handoff-note', state.listenerSetupNote);
   setText('runtime-log', state.runtimeLog);
@@ -84,12 +96,12 @@ function applyState(state) {
   setDisabled('install-vcredist-button', !state.canInstallVcRedist);
   setDisabled('setup-secure-mode-button', !state.canSetupSecureMode);
   setDisabled('open-firewall-rules-button', !state.canOpenFirewallRules);
-  setDisabled('copy-link-button', !state.canUseListenerSetup);
-  setDisabled('copy-bootstrap-url-button', !state.canUseListenerSetup);
-  setDisabled('copy-mac-setup-button', !state.canUseListenerSetup);
-  setDisabled('open-bootstrap-page-button', !state.canUseListenerSetup);
-  setDisabled('copy-windows-setup-button', !state.canUseListenerSetup);
-  setDisabled('open-mobile-guide-button', !state.canUseListenerSetup);
+  setDisabledAll(['copy-link-button'], !state.canUseListenerSetup);
+  setDisabledAll(['copy-bootstrap-url-button'], !state.canUseListenerSetup);
+  setDisabledAll(['copy-mac-setup-button', 'copy-mac-setup-button-copy'], !state.canUseListenerSetup);
+  setDisabledAll(['open-bootstrap-page-button', 'open-bootstrap-page-button-copy'], !state.canUseListenerSetup);
+  setDisabledAll(['copy-windows-setup-button', 'copy-windows-setup-button-copy'], !state.canUseListenerSetup);
+  setDisabledAll(['open-mobile-guide-button', 'open-mobile-guide-button-copy'], !state.canUseListenerSetup);
 }
 
 if (window.chrome?.webview) {
