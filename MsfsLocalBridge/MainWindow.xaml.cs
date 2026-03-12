@@ -63,7 +63,10 @@ public partial class MainWindow : Window
             return;
         }
 
-        var userDataFolder = Path.Combine(AppContext.BaseDirectory, ".webview2");
+        var userDataFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "MSFS Local Bridge",
+            "WebView2");
         Directory.CreateDirectory(userDataFolder);
 
         var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolder);
@@ -260,6 +263,8 @@ internal sealed class WebMessageEnvelope
     public string Type { get; set; } = string.Empty;
     public string Action { get; set; } = string.Empty;
 }
+
+
 
 
 
