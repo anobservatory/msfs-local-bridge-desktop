@@ -1,9 +1,11 @@
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
 using MsfsLocalBridge.Models;
@@ -13,6 +15,9 @@ namespace MsfsLocalBridge;
 
 public partial class MainWindow : Window
 {
+    private const int WmGetMinMaxInfoMessage = 0x0024;
+    private const uint MonitorDefaultToNearest = 0x00000002;
+
     private readonly BridgeWorkspace _workspace = new();
     private readonly PowerShellRunner _powerShellRunner = new();
     private readonly BridgeSessionService _sessionService;
@@ -35,9 +40,56 @@ public partial class MainWindow : Window
         };
         _refreshTimer.Tick += async (_, _) => await PublishStateAsync();
         Loaded += OnLoaded;
+        SourceInitialized += OnSourceInitialized;
         Closing += OnClosing;
         StateChanged += OnWindowStateChanged;
         UpdateWindowChrome();
+    }
+
+    private void OnSourceInitialized(object? sender, EventArgs e)
+    {
+        if (PresentationSource.FromVisual(this) is HwndSource source)
+        {
+            source.AddHook(WindowProc);
+        }
+    }
+
+    private IntPtr WindowProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        if (msg == WmGetMinMaxInfoMessage)
+        {
+            ApplyMaximizedSize(hwnd, lParam);
+            handled = true;
+        }
+
+        return IntPtr.Zero;
+    }
+
+    private static void ApplyMaximizedSize(IntPtr hwnd, IntPtr lParam)
+    {
+        var monitor = MonitorFromWindow(hwnd, MonitorDefaultToNearest);
+        if (monitor == IntPtr.Zero)
+        {
+            return;
+        }
+
+        var monitorInfo = new MonitorInfo();
+        monitorInfo.Size = Marshal.SizeOf<MonitorInfo>();
+        if (!GetMonitorInfo(monitor, ref monitorInfo))
+        {
+            return;
+        }
+
+        var workArea = monitorInfo.WorkArea;
+        var monitorArea = monitorInfo.MonitorArea;
+        var minMaxInfo = Marshal.PtrToStructure<MinMaxInfo>(lParam);
+
+        minMaxInfo.MaxPosition.X = Math.Abs(workArea.Left - monitorArea.Left);
+        minMaxInfo.MaxPosition.Y = Math.Abs(workArea.Top - monitorArea.Top);
+        minMaxInfo.MaxSize.X = Math.Abs(workArea.Right - workArea.Left);
+        minMaxInfo.MaxSize.Y = Math.Abs(workArea.Bottom - workArea.Top);
+
+        Marshal.StructureToPtr(minMaxInfo, lParam, true);
     }
 
     private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -335,6 +387,48 @@ public partial class MainWindow : Window
             UseShellExecute = true
         });
     }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfo lpmi);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct PointInt
+    {
+        public int X;
+        public int Y;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MinMaxInfo
+    {
+        public PointInt Reserved;
+        public PointInt MaxSize;
+        public PointInt MaxPosition;
+        public PointInt MinTrackSize;
+        public PointInt MaxTrackSize;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MonitorRectangle
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    private struct MonitorInfo
+    {
+        public int Size;
+        public MonitorRectangle MonitorArea;
+        public MonitorRectangle WorkArea;
+        public uint Flags;
+    }
 }
 
 internal sealed class WebMessageEnvelope
@@ -342,4 +436,3 @@ internal sealed class WebMessageEnvelope
     public string Type { get; set; } = string.Empty;
     public string Action { get; set; } = string.Empty;
 }
-
