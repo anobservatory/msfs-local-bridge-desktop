@@ -395,6 +395,10 @@ pre {
   margin-top: 2px;
 }
 
+.listener-copy {
+  margin-bottom: 16px;
+}
+
 code,
 .log-view {
   border-radius: var(--radius-sm);
@@ -432,6 +436,10 @@ code {
   display: grid;
   gap: 12px;
   align-content: start;
+}
+
+.listener-setup-stack {
+  margin-top: 10px;
 }
 
 .split-actions {
