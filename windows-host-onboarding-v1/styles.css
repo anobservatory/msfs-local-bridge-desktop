@@ -14,9 +14,9 @@
   --ok-soft: rgba(116, 211, 155, 0.14);
   --warn: #f0b35f;
   --warn-soft: rgba(240, 179, 95, 0.14);
-  --shadow: 0 24px 64px rgba(0, 0, 0, 0.34);
-  --radius: 20px;
-  --radius-sm: 14px;
+  --shadow: 0 20px 54px rgba(0, 0, 0, 0.32);
+  --radius: 16px;
+  --radius-sm: 11px;
 }
 
 * {
@@ -57,10 +57,10 @@ pre {
 
 .app-shell {
   width: min(1360px, calc(100vw - 20px));
-  margin: 10px auto;
-  padding: 16px;
+  margin: 8px auto;
+  padding: 13px;
   border: 1px solid var(--line);
-  border-radius: 26px;
+  border-radius: 22px;
   background: rgba(8, 14, 22, 0.9);
   box-shadow: var(--shadow);
   backdrop-filter: blur(16px);
@@ -76,7 +76,7 @@ pre {
 .split-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .app-header,
@@ -95,7 +95,7 @@ pre {
 }
 
 .app-header {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .brand-block h1,
@@ -112,7 +112,7 @@ pre {
 }
 
 .brand-block h1 {
-  font-size: 2.05rem;
+  font-size: 1.72rem;
   line-height: 1.05;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -127,7 +127,7 @@ pre {
 .stat-card span {
   margin: 0;
   color: var(--muted);
-  font-size: 0.73rem;
+  font-size: 0.66rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -143,16 +143,16 @@ pre {
 .meta-line {
   margin: 0;
   color: var(--muted);
-  font-size: 0.93rem;
-  line-height: 1.5;
+  font-size: 0.8rem;
+  line-height: 1.42;
 }
 
 .pill,
 .state {
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 7px 12px;
-  font-size: 0.78rem;
+  padding: 6px 10px;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -193,7 +193,7 @@ pre {
 .setup-step-stack,
 .panel-stack {
   display: grid;
-  gap: 14px;
+  gap: 11px;
 }
 
 .signal-strip {
@@ -246,27 +246,27 @@ pre {
 
 .signal-card,
 .card {
-  padding: 16px;
+  padding: 13px;
 }
 
 .signal-card strong {
   display: block;
-  font-size: 1.04rem;
+  font-size: 0.92rem;
   font-weight: 700;
-  margin-top: 6px;
-  margin-bottom: 6px;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
 .tab-strip {
-  margin: 14px 0 18px;
+  margin: 11px 0 14px;
   flex-wrap: wrap;
 }
 
 .tab-btn,
 .primary-btn,
 .secondary-btn {
-  border-radius: 12px;
-  padding: 10px 14px;
+  border-radius: 8px;
+  padding: 8px 12px;
   border: 1px solid var(--line-strong);
   cursor: pointer;
   transition: 120ms ease;
@@ -306,17 +306,17 @@ pre {
 }
 
 .card-head {
-  margin-bottom: 14px;
+  margin-bottom: 11px;
 }
 
 .card h2 {
-  font-size: 1.2rem;
+  font-size: 1.03rem;
   line-height: 1.2;
   font-weight: 700;
 }
 
 .hero-value {
-  font-size: 1.9rem;
+  font-size: 1.56rem;
   line-height: 1.05;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -324,12 +324,12 @@ pre {
 
 .bridge-layout {
   display: grid;
-  gap: 18px;
+  gap: 14px;
 }
 
 .bridge-main {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   align-content: start;
 }
 
@@ -342,14 +342,14 @@ pre {
 }
 
 .stat-card {
-  padding: 14px;
-  min-height: 92px;
+  padding: 12px;
+  min-height: 80px;
 }
 
 .stat-card strong {
   display: block;
-  margin-top: 12px;
-  font-size: 1rem;
+  margin-top: 10px;
+  font-size: 0.9rem;
   font-weight: 700;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -359,13 +359,13 @@ pre {
 .flow-row,
 .device-row,
 .action-card {
-  padding: 14px;
+  padding: 12px;
 }
 
 .flow-row {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 14px;
+  gap: 11px;
   align-items: start;
 }
 
@@ -380,25 +380,25 @@ pre {
 }
 
 .flow-index {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
   display: grid;
   place-items: center;
   background: rgba(255, 255, 255, 0.06);
   color: var(--text);
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   font-weight: 800;
 }
 
 .listener-top,
 .field-block {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .listener-top {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .utility-row,
@@ -408,7 +408,7 @@ pre {
 }
 
 .listener-copy {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 code,
@@ -420,23 +420,23 @@ code,
 
 code {
   display: block;
-  padding: 12px 14px;
+  padding: 10px 12px;
   color: #d7e7fb;
-  font-size: 0.82rem;
-  line-height: 1.45;
+  font-size: 0.74rem;
+  line-height: 1.4;
   word-break: break-word;
 }
 
 .note-banner {
-  padding: 14px;
+  padding: 12px;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(240, 179, 95, 0.22);
   background: rgba(240, 179, 95, 0.1);
-  font-size: 0.95rem;
+  font-size: 0.84rem;
 }
 
 .device-stack {
-  margin-top: 22px;
+  margin-top: 16px;
 }
 
 .device-pair {
@@ -446,12 +446,12 @@ code {
 .device-row,
 .action-card {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   align-content: start;
 }
 
 .listener-setup-stack {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .split-actions {
@@ -460,11 +460,11 @@ code {
 
 .log-view {
   margin: 0;
-  min-height: 320px;
-  padding: 14px;
+  min-height: 280px;
+  padding: 12px;
   color: #d8e7fa;
-  font-size: 0.82rem;
-  line-height: 1.5;
+  font-size: 0.74rem;
+  line-height: 1.42;
   white-space: pre-wrap;
 }
 
@@ -506,8 +506,8 @@ code {
   .app-shell {
     width: calc(100vw - 10px);
     margin: 5px auto;
-    padding: 10px;
-    border-radius: 18px;
+    padding: 8px;
+    border-radius: 15px;
   }
 
   .app-header,
@@ -539,9 +539,9 @@ code {
 }
 
 .log-view {
-  height: 360px;
-  min-height: 360px;
-  max-height: 360px;
+  height: 320px;
+  min-height: 320px;
+  max-height: 320px;
   overflow: auto;
 }
 
@@ -557,7 +557,7 @@ code {
 
 .runtime-grid .utility-row {
   margin-top: 4px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .log-view {
