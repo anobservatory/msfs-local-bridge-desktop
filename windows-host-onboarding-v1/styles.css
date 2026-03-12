@@ -225,7 +225,7 @@ pre {
 
 .setup-grid,
 .runtime-grid {
-  grid-template-columns: 0.86fr 1.14fr;
+  grid-template-columns: 0.96fr 1.04fr;
   align-items: stretch;
 }
 
@@ -566,4 +566,6 @@ code {
   max-height: 460px;
   overflow: auto;
 }
+
+
 
