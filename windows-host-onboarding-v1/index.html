@@ -53,39 +53,34 @@
         <section class="tab-panel active" data-panel="overview">
           <div class="overview-grid">
             <section class="card bridge-card">
-              <div class="card-head">
-                <div>
-                  <p class="section-label">Bridge Now</p>
-                  <h2>Run the host bridge from one place</h2>
+              <div class="card-head bridge-head">
+                <div class="bridge-title-block">
+                  <p class="section-label">Bridge</p>
+                  <h2 id="bridge-card-title">Bridge Running</h2>
+                  <p class="card-copy bridge-summary">Start, stop, or restart the host bridge from here.</p>
                 </div>
                 <div class="pill pill-ok" id="bridge-control-pill">Stopped</div>
               </div>
               <div class="bridge-layout">
-                <div class="bridge-main">
-                  <p class="lead-label">Daily use</p>
-                  <div class="hero-value">Bridge Running</div>
-                  <p class="card-copy">Keep the bridge controls here, and only hand off device setup after the host is already broadcasting.</p>
-                  <p class="meta-line">Primary action: <span id="primary-action-label">Start Bridge</span></p>
-                  <div class="button-row action-row">
-                    <button class="primary-btn" data-action="start-bridge" id="start-bridge-button">Start Bridge</button>
-                    <button class="secondary-btn" data-action="stop-bridge" id="stop-bridge-button">Stop</button>
-                    <button class="secondary-btn" data-action="restart-bridge" id="restart-bridge-button">Restart</button>
-                  </div>
+                <div class="button-row action-row bridge-actions">
+                  <button class="primary-btn" data-action="start-bridge" id="start-bridge-button">Start Bridge</button>
+                  <button class="secondary-btn" data-action="stop-bridge" id="stop-bridge-button">Stop</button>
+                  <button class="secondary-btn" data-action="restart-bridge" id="restart-bridge-button">Restart</button>
                 </div>
-                <div class="stat-grid">
-                  <article class="stat-card">
+                <div class="stat-grid bridge-strip">
+                  <article class="stat-card bridge-strip-item">
                     <span>Host IP</span>
                     <strong id="host-ip">192.168.0.24</strong>
                   </article>
-                  <article class="stat-card">
+                  <article class="stat-card bridge-strip-item">
                     <span>Secure stream</span>
                     <strong id="secure-stream">39002 /stream</strong>
                   </article>
-                  <article class="stat-card">
+                  <article class="stat-card bridge-strip-item">
                     <span>SimConnect</span>
                     <strong id="simconnect-detail">Waiting for flight</strong>
                   </article>
-                  <article class="stat-card">
+                  <article class="stat-card bridge-strip-item">
                     <span>Last issue</span>
                     <strong id="last-issue">.NET runtime missing</strong>
                   </article>

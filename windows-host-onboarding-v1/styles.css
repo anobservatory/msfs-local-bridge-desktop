@@ -322,28 +322,61 @@ pre {
   letter-spacing: -0.03em;
 }
 
-.bridge-layout {
+.bridge-card {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
-.bridge-main {
+.bridge-head {
+  align-items: start;
+  gap: 12px;
+}
+
+.bridge-title-block {
   display: grid;
-  gap: 10px;
-  align-content: start;
+  gap: 6px;
+}
+
+.bridge-title-block h2 {
+  font-size: 1.22rem;
+  line-height: 1.08;
+}
+
+.bridge-summary {
+  max-width: 480px;
+}
+
+.bridge-layout {
+  display: grid;
+  gap: 12px;
+}
+
+.bridge-actions {
+  margin-top: 0;
 }
 
 .action-row {
-  margin-top: 4px;
+  margin-top: 0;
 }
 
 .stat-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.bridge-strip {
+  gap: 10px;
+}
+
 .stat-card {
   padding: 12px;
   min-height: 80px;
+}
+
+.bridge-strip-item {
+  min-height: 0;
+  padding: 10px 12px;
+  border-radius: 13px;
+  background: rgba(14, 23, 36, 0.86);
 }
 
 .stat-card strong {
@@ -354,6 +387,11 @@ pre {
   overflow-wrap: anywhere;
   word-break: break-word;
   line-height: 1.35;
+}
+
+.bridge-strip-item strong {
+  margin-top: 6px;
+  font-size: 0.84rem;
 }
 
 .flow-row,
@@ -566,6 +604,7 @@ code {
   max-height: 460px;
   overflow: auto;
 }
+
 
 
 

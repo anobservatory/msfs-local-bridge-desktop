@@ -67,7 +67,6 @@ function applyState(state) {
   setText('status-bridge', state.bridgeStatus);
   setText('status-bootstrap', state.bootstrapStatus);
   setText('bridge-control-pill', state.bridgeControlText);
-  setText('primary-action-label', state.primaryActionText);
   setText('host-ip', state.hostIp);
   setText('secure-stream', state.secureStream);
   setText('last-issue', state.lastIssue);
