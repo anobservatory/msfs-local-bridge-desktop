@@ -68,6 +68,7 @@ public partial class MainWindow : Window
 
         var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolder);
         await MockupBrowser.EnsureCoreWebView2Async(environment);
+        MockupBrowser.DefaultBackgroundColor = System.Drawing.Color.FromArgb(7, 16, 26);
         MockupBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
         MockupBrowser.CoreWebView2.Settings.AreDevToolsEnabled = true;
         MockupBrowser.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
@@ -259,5 +260,8 @@ internal sealed class WebMessageEnvelope
     public string Type { get; set; } = string.Empty;
     public string Action { get; set; } = string.Empty;
 }
+
+
+
 
 

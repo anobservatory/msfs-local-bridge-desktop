@@ -11,7 +11,7 @@
         MinWidth="960"
         MinHeight="700"
         WindowStartupLocation="CenterScreen"
-        Background="#F3EFE6">
+        Background="#07101A">
     <Grid>
         <wv2:WebView2 x:Name="MockupBrowser" />
     </Grid>
