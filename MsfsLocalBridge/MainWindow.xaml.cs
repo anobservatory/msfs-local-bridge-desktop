@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
 using MsfsLocalBridge.Models;
@@ -34,6 +36,8 @@ public partial class MainWindow : Window
         _refreshTimer.Tick += async (_, _) => await PublishStateAsync();
         Loaded += OnLoaded;
         Closing += OnClosing;
+        StateChanged += OnWindowStateChanged;
+        UpdateWindowChrome();
     }
 
     private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -78,6 +82,65 @@ public partial class MainWindow : Window
         AppBrowser.NavigationCompleted += async (_, _) => await PublishStateAsync();
         AppBrowser.Source = new Uri(_workspace.HostConsoleIndexPath);
         _refreshTimer.Start();
+        UpdateWindowChrome();
+    }
+
+    private void OnWindowStateChanged(object? sender, EventArgs e)
+    {
+        UpdateWindowChrome();
+    }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.OriginalSource is DependencyObject source)
+        {
+            var parentButton = FindVisualParent<Button>(source);
+            if (parentButton is not null)
+            {
+                return;
+            }
+        }
+
+        if (e.ClickCount == 2)
+        {
+            ToggleWindowState();
+            return;
+        }
+
+        if (e.ButtonState == MouseButtonState.Pressed)
+        {
+            DragMove();
+        }
+    }
+
+    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void MaximizeRestoreButton_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleWindowState();
+    }
+
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private void ToggleWindowState()
+    {
+        WindowState = WindowState == WindowState.Maximized
+            ? WindowState.Normal
+            : WindowState.Maximized;
+    }
+
+    private void UpdateWindowChrome()
+    {
+        var maximized = WindowState == WindowState.Maximized;
+        BorderThickness = maximized ? new Thickness(0) : new Thickness(1);
+        MaximizeRestoreGlyph.Text = maximized ? "\uE923" : "\uE922";
+        MaximizeRestoreButton.ToolTip = maximized ? "Restore" : "Maximize";
     }
 
     private async void OnWebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
@@ -243,6 +306,22 @@ public partial class MainWindow : Window
         await Task.CompletedTask;
     }
 
+    private static T? FindVisualParent<T>(DependencyObject? child)
+        where T : DependencyObject
+    {
+        while (child is not null)
+        {
+            if (child is T match)
+            {
+                return match;
+            }
+
+            child = System.Windows.Media.VisualTreeHelper.GetParent(child);
+        }
+
+        return null;
+    }
+
     private static void OpenExternal(string target)
     {
         if (string.IsNullOrWhiteSpace(target) || target == "Not available")
@@ -263,11 +342,4 @@ internal sealed class WebMessageEnvelope
     public string Type { get; set; } = string.Empty;
     public string Action { get; set; } = string.Empty;
 }
-
-
-
-
-
-
-
 

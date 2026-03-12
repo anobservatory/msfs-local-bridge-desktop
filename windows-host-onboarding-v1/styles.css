@@ -27,6 +27,7 @@ html {
   height: 100%;
   background: #07101a;
   overscroll-behavior: none;
+  scrollbar-color: rgba(111, 140, 172, 0.55) rgba(9, 16, 25, 0.9);
 }
 
 body {
@@ -41,6 +42,27 @@ body {
   overscroll-behavior: none;
   overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-color: rgba(111, 140, 172, 0.55) rgba(9, 16, 25, 0.9);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(9, 16, 25, 0.88);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(95, 125, 160, 0.9), rgba(67, 92, 121, 0.92));
+  border: 2px solid rgba(9, 16, 25, 0.92);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(118, 151, 189, 0.92), rgba(81, 109, 142, 0.94));
 }
 
 button,
@@ -56,8 +78,8 @@ pre {
 }
 
 .app-shell {
-  width: min(1360px, calc(100vw - 20px));
-  margin: 8px auto;
+  width: min(1360px, calc(100vw - 18px));
+  margin: 6px auto;
   padding: 13px;
   border: 1px solid var(--line);
   border-radius: 22px;
@@ -603,6 +625,8 @@ code {
   max-height: 460px;
   overflow: auto;
 }
+
+
 
 
 
