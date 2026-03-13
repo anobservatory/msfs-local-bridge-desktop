@@ -15,8 +15,8 @@
   --warn: #f0b35f;
   --warn-soft: rgba(240, 179, 95, 0.14);
   --shadow: 0 20px 54px rgba(0, 0, 0, 0.32);
-  --radius: 16px;
-  --radius-sm: 11px;
+  --radius: 18px;
+  --radius-sm: 12px;
 }
 
 * {
@@ -590,6 +590,11 @@ code {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
+}
+
+.overview-grid,
+.setup-grid {
+  padding-bottom: 14px;
 }
 
 @media (max-width: 1220px) {
