@@ -104,6 +104,8 @@ pre {
 }
 
 .shell-scroll {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 0;
   overflow-y: auto;
@@ -240,9 +242,16 @@ body.window-maximized .shell-scroll {
 .device-stack,
 .device-pair,
 .listener-setup-stack,
-.setup-step-stack,
-.panel-stack {
+.setup-step-stack {
   display: grid;
+  gap: 11px;
+}
+
+.panel-stack {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
   gap: 11px;
 }
 
@@ -570,10 +579,17 @@ code {
 
 .tab-panel {
   display: none;
+  min-height: 0;
 }
 
 .tab-panel.active {
   display: block;
+}
+
+.tab-panel.active[data-panel="runtime"] {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 @media (max-width: 1220px) {
@@ -623,31 +639,16 @@ code {
     justify-self: start;
   }
 }
-.runtime-grid .card:first-child {
-  display: grid;
-  grid-template-rows: auto auto 1fr;
-}
-
-.runtime-grid .utility-row {
-  margin-top: 2px;
-  margin-bottom: 12px;
-}
-
-.log-view {
-  height: 320px;
-  min-height: 320px;
-  max-height: 320px;
-  overflow: auto;
-}
-
-
 .runtime-grid {
   grid-template-columns: 1fr;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .runtime-log-card {
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  min-height: 0;
 }
 
 .runtime-grid .utility-row {
@@ -656,9 +657,9 @@ code {
 }
 
 .log-view {
-  height: 460px;
-  min-height: 460px;
-  max-height: 460px;
+  height: auto;
+  min-height: 320px;
+  max-height: none;
   overflow: auto;
 }
 

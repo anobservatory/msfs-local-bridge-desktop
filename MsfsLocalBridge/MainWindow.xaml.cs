@@ -61,14 +61,14 @@ public partial class MainWindow : Window
     {
         if (msg == WmGetMinMaxInfoMessage)
         {
-            ApplyMaximizedSize(hwnd, lParam);
+            ApplyWindowBounds(hwnd, lParam);
             handled = true;
         }
 
         return IntPtr.Zero;
     }
 
-    private static void ApplyMaximizedSize(IntPtr hwnd, IntPtr lParam)
+    private void ApplyWindowBounds(IntPtr hwnd, IntPtr lParam)
     {
         var monitor = MonitorFromWindow(hwnd, MonitorDefaultToNearest);
         if (monitor == IntPtr.Zero)
@@ -86,11 +86,14 @@ public partial class MainWindow : Window
         var workArea = monitorInfo.WorkArea;
         var monitorArea = monitorInfo.MonitorArea;
         var minMaxInfo = Marshal.PtrToStructure<MinMaxInfo>(lParam);
+        var dpi = System.Windows.Media.VisualTreeHelper.GetDpi(this);
 
         minMaxInfo.MaxPosition.X = Math.Abs(workArea.Left - monitorArea.Left);
         minMaxInfo.MaxPosition.Y = Math.Abs(workArea.Top - monitorArea.Top);
         minMaxInfo.MaxSize.X = Math.Abs(workArea.Right - workArea.Left);
         minMaxInfo.MaxSize.Y = Math.Abs(workArea.Bottom - workArea.Top);
+        minMaxInfo.MinTrackSize.X = (int)Math.Ceiling(MinWidth * dpi.DpiScaleX);
+        minMaxInfo.MinTrackSize.Y = (int)Math.Ceiling(MinHeight * dpi.DpiScaleY);
 
         Marshal.StructureToPtr(minMaxInfo, lParam, true);
     }
