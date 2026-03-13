@@ -39,27 +39,48 @@ body {
   overflow: hidden;
 }
 
-.shell-scroll::-webkit-scrollbar,
-.runtime-log::-webkit-scrollbar {
+.shell-scroll::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
-.shell-scroll::-webkit-scrollbar-track,
-.runtime-log::-webkit-scrollbar-track {
+.shell-scroll::-webkit-scrollbar-track {
   background: rgba(9, 16, 25, 0.88);
 }
 
-.shell-scroll::-webkit-scrollbar-thumb,
-.runtime-log::-webkit-scrollbar-thumb {
+.shell-scroll::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, rgba(95, 125, 160, 0.9), rgba(67, 92, 121, 0.92));
   border: 2px solid rgba(9, 16, 25, 0.92);
   border-radius: 999px;
 }
 
-.shell-scroll::-webkit-scrollbar-thumb:hover,
-.runtime-log::-webkit-scrollbar-thumb:hover {
+.shell-scroll::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, rgba(118, 151, 189, 0.92), rgba(81, 109, 142, 0.94));
+}
+
+.log-view {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95, 125, 160, 0.92) rgba(9, 16, 25, 0.88);
+}
+
+.log-view::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.log-view::-webkit-scrollbar-track {
+  background: rgba(9, 16, 25, 0.82);
+  border-radius: 999px;
+}
+
+.log-view::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(109, 141, 177, 0.94), rgba(76, 104, 136, 0.96));
+  border: 1px solid rgba(9, 16, 25, 0.88);
+  border-radius: 999px;
+}
+
+.log-view::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(126, 161, 201, 0.96), rgba(88, 118, 154, 0.98));
 }
 
 button,
