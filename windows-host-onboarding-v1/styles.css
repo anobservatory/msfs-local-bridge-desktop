@@ -551,6 +551,18 @@ code {
   white-space: nowrap;
 }
 
+.equal-action-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+}
+
+.equal-action-row .primary-btn,
+.equal-action-row .secondary-btn {
+  width: 100%;
+  justify-content: center;
+}
+
 .listener-setup-stack {
   margin-top: 8px;
 }
