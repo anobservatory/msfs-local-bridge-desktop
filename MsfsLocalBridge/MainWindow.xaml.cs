@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows;
-using System.Windows.Input;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using Microsoft.Web.WebView2.Core;
@@ -15,8 +15,6 @@ namespace MsfsLocalBridge;
 public partial class MainWindow : Window
 {
     private const int WmGetMinMaxInfoMessage = 0x0024;
-    private const int WmNcLButtonDownMessage = 0x00A1;
-    private const int HtCaption = 0x0002;
     private const uint MonitorDefaultToNearest = 0x00000002;
 
     private readonly BridgeWorkspace _workspace = new();
@@ -33,6 +31,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        ApplyFrameState();
         _sessionService = new BridgeSessionService(_workspace, _powerShellRunner);
         _diagnosticsService = new BridgeDiagnosticsService(_workspace, _powerShellRunner);
         _refreshTimer = new DispatcherTimer
@@ -127,7 +126,7 @@ public partial class MainWindow : Window
 
         var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolder);
         await AppBrowser.EnsureCoreWebView2Async(environment);
-        AppBrowser.DefaultBackgroundColor = System.Drawing.Color.FromArgb(7, 16, 26);
+        AppBrowser.DefaultBackgroundColor = System.Drawing.Color.FromArgb(11, 20, 32);
         AppBrowser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
         AppBrowser.CoreWebView2.Settings.AreDevToolsEnabled = true;
         AppBrowser.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
@@ -142,6 +141,7 @@ public partial class MainWindow : Window
 
     private async void OnWindowStateChanged(object? sender, EventArgs e)
     {
+        ApplyFrameState();
         await PostWindowStateAsync();
     }
 
@@ -149,18 +149,11 @@ public partial class MainWindow : Window
     {
         try
         {
-            var handle = new WindowInteropHelper(this).Handle;
-            if (handle == IntPtr.Zero)
-            {
-                return;
-            }
-
-            ReleaseCapture();
-            SendMessage(handle, WmNcLButtonDownMessage, (IntPtr)HtCaption, IntPtr.Zero);
+            DragMove();
         }
         catch
         {
-            // Best-effort dragging for the custom web title bar.
+            // DragMove throws if the pointer state is not valid for a native drag.
         }
     }
 
@@ -207,9 +200,6 @@ public partial class MainWindow : Window
                 return;
             case "close-window":
                 Close();
-                return;
-            case "drag-window":
-                BeginWindowDrag();
                 return;
             case "start-bridge":
                 await _sessionService.StartAsync();
@@ -278,6 +268,65 @@ public partial class MainWindow : Window
         WindowState = WindowState == WindowState.Maximized
             ? WindowState.Normal
             : WindowState.Maximized;
+        ApplyFrameState();
+    }
+
+    private void ApplyFrameState()
+    {
+        var isMaximized = WindowState == WindowState.Maximized;
+        FrameBorder.CornerRadius = isMaximized ? new CornerRadius(0) : new CornerRadius(18);
+        FrameBorder.BorderThickness = isMaximized ? new Thickness(0) : new Thickness(1);
+        MaximizeGlyph.Text = isMaximized ? "\uE923" : "\uE922";
+        MaximizeButton.ToolTip = isMaximized ? "Restore" : "Maximize";
+    }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (FindVisualParent<Button>(e.OriginalSource as DependencyObject) is not null)
+        {
+            return;
+        }
+
+        if (e.ClickCount == 2)
+        {
+            ToggleWindowState();
+            return;
+        }
+
+        if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
+        {
+            BeginWindowDrag();
+        }
+    }
+
+    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+    {
+        ToggleWindowState();
+    }
+
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private static T? FindVisualParent<T>(DependencyObject? element) where T : DependencyObject
+    {
+        while (element is not null)
+        {
+            if (element is T match)
+            {
+                return match;
+            }
+
+            element = System.Windows.Media.VisualTreeHelper.GetParent(element);
+        }
+
+        return null;
     }
 
     private async Task RunScriptAndNotifyAsync(string scriptPath, string successMessage)
@@ -376,12 +425,6 @@ public partial class MainWindow : Window
             UseShellExecute = true
         });
     }
-
-    [DllImport("user32.dll")]
-    private static extern bool ReleaseCapture();
-
-    [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll")]
     private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);

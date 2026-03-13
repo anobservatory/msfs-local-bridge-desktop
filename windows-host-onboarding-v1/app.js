@@ -1,9 +1,6 @@
 const tabs = Array.from(document.querySelectorAll('.tab-btn'));
 const panels = Array.from(document.querySelectorAll('.tab-panel'));
 const actionButtons = Array.from(document.querySelectorAll('[data-action]'));
-const dragRegion = document.getElementById('window-drag-region');
-const maximizeButton = document.getElementById('window-maximize-button');
-const maximizeGlyph = document.getElementById('window-maximize-glyph');
 
 for (const tab of tabs) {
   tab.addEventListener('click', () => {
@@ -24,34 +21,6 @@ for (const button of actionButtons) {
     postHostMessage({
       type: 'action',
       action: button.dataset.action
-    });
-  });
-}
-
-if (dragRegion) {
-  dragRegion.addEventListener('mousedown', (event) => {
-    if (event.button !== 0) {
-      return;
-    }
-
-    if (event.target.closest('button')) {
-      return;
-    }
-
-    postHostMessage({
-      type: 'action',
-      action: 'drag-window'
-    });
-  });
-
-  dragRegion.addEventListener('dblclick', (event) => {
-    if (event.target.closest('button')) {
-      return;
-    }
-
-    postHostMessage({
-      type: 'action',
-      action: 'toggle-maximize-window'
     });
   });
 }
@@ -92,15 +61,6 @@ function setDisabledAll(ids, disabled) {
 
 function applyWindowState(maximized) {
   document.body.classList.toggle('window-maximized', Boolean(maximized));
-
-  if (maximizeGlyph) {
-    maximizeGlyph.textContent = maximized ? '\uE923' : '\uE922';
-  }
-
-  if (maximizeButton) {
-    maximizeButton.title = maximized ? 'Restore' : 'Maximize';
-    maximizeButton.setAttribute('aria-label', maximized ? 'Restore' : 'Maximize');
-  }
 }
 
 function applyState(state) {
