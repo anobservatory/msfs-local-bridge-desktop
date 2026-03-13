@@ -16,6 +16,10 @@ public partial class MainWindow : Window
 {
     private const int WmGetMinMaxInfoMessage = 0x0024;
     private const uint MonitorDefaultToNearest = 0x00000002;
+    private static readonly Thickness NormalFrameMargin = new(0);
+    private static readonly Thickness MaximizedFrameMargin = new(8);
+    private static readonly CornerRadius NormalFrameRadius = new(18);
+    private static readonly CornerRadius MaximizedFrameRadius = new(14);
 
     private readonly BridgeWorkspace _workspace = new();
     private readonly PowerShellRunner _powerShellRunner = new();
@@ -274,8 +278,9 @@ public partial class MainWindow : Window
     private void ApplyFrameState()
     {
         var isMaximized = WindowState == WindowState.Maximized;
-        FrameBorder.CornerRadius = isMaximized ? new CornerRadius(0) : new CornerRadius(18);
-        FrameBorder.BorderThickness = isMaximized ? new Thickness(0) : new Thickness(1);
+        FrameBorder.Margin = isMaximized ? MaximizedFrameMargin : NormalFrameMargin;
+        FrameBorder.CornerRadius = isMaximized ? MaximizedFrameRadius : NormalFrameRadius;
+        FrameBorder.BorderThickness = new Thickness(1);
         MaximizeGlyph.Text = isMaximized ? "\uE923" : "\uE922";
         MaximizeButton.ToolTip = isMaximized ? "Restore" : "Maximize";
     }
