@@ -13,6 +13,7 @@ internal sealed class BridgeSessionService
     private Process? _process;
     private string? _lastFailureReason;
     private int? _lastExitCode;
+    private int? _expectedExitProcessId;
 
     public BridgeSessionService(BridgeWorkspace workspace, PowerShellRunner runner)
     {
@@ -95,6 +96,11 @@ internal sealed class BridgeSessionService
         if (!IsRunning || _process is null)
         {
             return Task.CompletedTask;
+        }
+
+        lock (_sync)
+        {
+            _expectedExitProcessId = _process.Id;
         }
 
         AppendLog("bridge: stopping process");
@@ -186,10 +192,27 @@ internal sealed class BridgeSessionService
 
     private void OnProcessExited(Process process)
     {
+        bool wasIntentionalStop;
+
         lock (_sync)
         {
             _lastExitCode = process.ExitCode;
-            _lastFailureReason ??= BuildFailureReason(_runtimeLog.ToString(), process.ExitCode);
+            wasIntentionalStop = _expectedExitProcessId == process.Id;
+
+            if (wasIntentionalStop)
+            {
+                _expectedExitProcessId = null;
+            }
+            else
+            {
+                _lastFailureReason ??= BuildFailureReason(_runtimeLog.ToString(), process.ExitCode);
+            }
+        }
+
+        if (wasIntentionalStop)
+        {
+            AppendLog("bridge: stopped");
+            return;
         }
 
         AppendLog($"bridge: exited with code {process.ExitCode}");
@@ -230,11 +253,6 @@ internal sealed class BridgeSessionService
             return "Bridge could not bind to the required port.";
         }
 
-        if (line.Contains("native SimConnect worker not found", StringComparison.OrdinalIgnoreCase))
-        {
-            return "SimConnect worker executable is missing.";
-        }
-
         if (line.Contains("Worker executable not found", StringComparison.OrdinalIgnoreCase))
         {
             return "SimConnect worker executable is missing.";
@@ -265,8 +283,7 @@ internal sealed class BridgeSessionService
             return "Bridge could not bind to the required port.";
         }
 
-        if (runtimeLog.Contains("native SimConnect worker not found", StringComparison.OrdinalIgnoreCase)
-            || runtimeLog.Contains("Worker executable not found", StringComparison.OrdinalIgnoreCase))
+        if (runtimeLog.Contains("Worker executable not found", StringComparison.OrdinalIgnoreCase))
         {
             return "SimConnect worker executable is missing.";
         }
