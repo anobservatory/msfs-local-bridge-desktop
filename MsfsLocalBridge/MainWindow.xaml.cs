@@ -94,6 +94,8 @@ public partial class MainWindow : Window
         minMaxInfo.MaxSize.Y = Math.Abs(workArea.Bottom - workArea.Top);
         minMaxInfo.MinTrackSize.X = (int)Math.Ceiling(MinWidth * dpi.DpiScaleX);
         minMaxInfo.MinTrackSize.Y = (int)Math.Ceiling(MinHeight * dpi.DpiScaleY);
+        minMaxInfo.MaxTrackSize.X = (int)Math.Ceiling(Width * dpi.DpiScaleX);
+        minMaxInfo.MaxTrackSize.Y = (int)Math.Ceiling(Height * dpi.DpiScaleY);
 
         Marshal.StructureToPtr(minMaxInfo, lParam, true);
     }
