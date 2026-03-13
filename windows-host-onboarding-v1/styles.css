@@ -527,7 +527,7 @@ code {
 }
 
 .device-pair {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1.15fr 0.85fr;
 }
 
 .device-row,
@@ -535,6 +535,11 @@ code {
   display: grid;
   gap: 10px;
   align-content: start;
+}
+
+.device-pair .button-row .primary-btn,
+.device-pair .button-row .secondary-btn {
+  white-space: nowrap;
 }
 
 .listener-setup-stack {
