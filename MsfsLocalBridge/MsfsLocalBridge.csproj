@@ -10,10 +10,20 @@
     <AssemblyName>MsfsLocalBridge</AssemblyName>
     <RootNamespace>MsfsLocalBridge</RootNamespace>
     <Product>MSFS Local Bridge</Product>
+    <ApplicationIcon>..\ao.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\ao.ico">
+      <Link>Assets\ao.ico</Link>
+    </Resource>
+    <Resource Include="..\ao_white.png">
+      <Link>Assets\ao_white.png</Link>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>

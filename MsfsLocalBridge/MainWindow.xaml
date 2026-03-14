@@ -7,6 +7,7 @@
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         mc:Ignorable="d"
         Title="MSFS Local Bridge"
+        Icon="pack://application:,,,/Assets/ao.ico"
         Width="1400"
         Height="800"
         MinWidth="1400"
@@ -99,12 +100,10 @@
                         <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Center"
                                     Margin="14,0,0,0">
-                            <Border Width="14"
-                                    Height="14"
-                                    CornerRadius="4"
-                                    Background="#2DCEB3"
-                                    BorderBrush="#84E8D1"
-                                    BorderThickness="1" />
+                            <Image Width="16"
+                                   Height="16"
+                                   Stretch="Uniform"
+                                   Source="pack://application:,,,/Assets/ao_white.png" />
                             <TextBlock Margin="10,0,0,0"
                                        VerticalAlignment="Center"
                                        FontSize="14"
