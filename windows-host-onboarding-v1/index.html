@@ -50,25 +50,37 @@
         <button class="tab-btn" data-tab="runtime">Runtime</button>
       </nav>
 
-      <main class="panel-stack">
-        <section class="tab-panel active" data-panel="overview">
-          <div class="overview-grid">
-            <section class="card bridge-card">
-              <div class="card-head bridge-head">
-                <div class="bridge-title-block">
-                  <p class="section-label">Bridge</p>
-                  <h2 id="bridge-card-title">Bridge Running</h2>
-                  <p class="card-copy bridge-summary">Start, stop, or restart the host bridge from here.</p>
+        <main class="panel-stack">
+          <section class="tab-panel active" data-panel="overview">
+            <div class="overview-grid">
+              <section class="card bridge-card bridge-control-card">
+                <div class="card-head bridge-head">
+                  <div class="bridge-title-block">
+                    <p class="section-label">Bridge</p>
+                    <h2 id="bridge-card-title">Bridge Running</h2>
+                    <p class="card-copy bridge-summary">Start, stop, or restart the host bridge from here.</p>
+                  </div>
                 </div>
-                <div class="pill pill-ok" id="bridge-control-pill">Stopped</div>
-              </div>
-              <div class="bridge-body">
-                <div class="button-row action-row bridge-actions">
-                  <button class="primary-btn" data-action="start-bridge" id="start-bridge-button">Start Bridge</button>
-                  <button class="secondary-btn" data-action="stop-bridge" id="stop-bridge-button">Stop</button>
-                  <button class="secondary-btn" data-action="restart-bridge" id="restart-bridge-button">Restart</button>
+                <div class="bridge-control-panel">
+                  <div class="bridge-control-top">
+                    <div class="pill pill-ok" id="bridge-control-pill">Stopped</div>
+                  </div>
+                  <div class="button-row action-row bridge-actions">
+                    <button class="primary-btn" data-action="start-bridge" id="start-bridge-button">Start Bridge</button>
+                    <button class="secondary-btn" data-action="stop-bridge" id="stop-bridge-button">Stop</button>
+                    <button class="secondary-btn" data-action="restart-bridge" id="restart-bridge-button">Restart</button>
+                  </div>
                 </div>
-                <div class="bridge-strip">
+              </section>
+
+              <section class="card bridge-status-card">
+                <div class="card-head bridge-status-head">
+                  <div>
+                    <p class="section-label">Bridge Status</p>
+                    <h2>Current bridge state</h2>
+                  </div>
+                </div>
+                <div class="bridge-status-grid">
                   <article class="stat-card bridge-strip-item">
                     <span>Host IP</span>
                     <strong id="host-ip">192.168.0.24</strong>
@@ -86,8 +98,7 @@
                     <strong id="last-issue">.NET runtime missing</strong>
                   </article>
                 </div>
-              </div>
-            </section>
+              </section>
 
             <section class="card checklist-card">
               <div class="card-head">

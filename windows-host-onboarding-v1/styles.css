@@ -260,13 +260,17 @@ body.window-maximized .shell-scroll {
 .overview-grid {
   grid-template-columns: 1fr 1fr;
   grid-template-areas:
-    "bridge bridge"
+    "bridge-control bridge-status"
     "host listener";
   align-items: stretch;
 }
 
-.bridge-card {
-  grid-area: bridge;
+.bridge-control-card {
+  grid-area: bridge-control;
+}
+
+.bridge-status-card {
+  grid-area: bridge-status;
 }
 
 .checklist-card {
@@ -378,14 +382,17 @@ body.window-maximized .shell-scroll {
   letter-spacing: -0.03em;
 }
 
-.bridge-card {
+.bridge-card,
+.bridge-status-card {
   display: grid;
   gap: 14px;
+  height: 100%;
+  align-content: start;
 }
 
 .bridge-head {
   align-items: start;
-  gap: 14px;
+  gap: 10px;
 }
 
 .bridge-title-block {
@@ -402,10 +409,16 @@ body.window-maximized .shell-scroll {
   max-width: 560px;
 }
 
-.bridge-body {
+.bridge-control-panel {
   display: grid;
-  gap: 14px;
-  align-items: stretch;
+  grid-template-rows: auto auto;
+  align-content: start;
+  gap: 12px;
+}
+
+.bridge-control-top {
+  display: flex;
+  justify-content: flex-start;
 }
 
 .bridge-actions {
@@ -426,18 +439,19 @@ body.window-maximized .shell-scroll {
   min-height: 80px;
 }
 
-.bridge-strip {
+.bridge-status-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   width: 100%;
+  align-content: start;
 }
 
 .bridge-strip-item {
-  min-height: 84px;
+  min-height: 92px;
   padding: 12px 14px;
   border-radius: 13px;
-  background: rgba(14, 23, 36, 0.86);
+  background: rgba(16, 26, 40, 0.92);
   display: grid;
   align-content: start;
   gap: 6px;
@@ -630,12 +644,13 @@ code {
   .runtime-grid,
   .device-pair,
   .stat-grid,
-  .bridge-strip {
+  .bridge-status-grid {
     grid-template-columns: 1fr;
     grid-template-areas: none;
   }
 
-  .bridge-card,
+  .bridge-control-card,
+  .bridge-status-card,
   .checklist-card,
   .unified-listener-card {
     grid-area: auto;
