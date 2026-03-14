@@ -267,6 +267,8 @@ body.window-maximized .shell-scroll {
 
 .bridge-control-card {
   grid-area: bridge-control;
+  align-self: start;
+  position: relative;
 }
 
 .bridge-status-card {
@@ -386,13 +388,14 @@ body.window-maximized .shell-scroll {
 .bridge-status-card {
   display: grid;
   gap: 14px;
-  height: 100%;
   align-content: start;
+  align-self: start;
 }
 
 .bridge-head {
-  align-items: start;
-  gap: 10px;
+  display: block;
+  position: relative;
+  padding-right: 110px;
 }
 
 .bridge-title-block {
@@ -411,19 +414,31 @@ body.window-maximized .shell-scroll {
 
 .bridge-control-panel {
   display: grid;
-  grid-template-rows: auto auto;
   align-content: start;
-  gap: 12px;
-}
-
-.bridge-control-top {
-  display: flex;
-  justify-content: flex-start;
+  gap: 10px;
 }
 
 .bridge-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: 0;
-  justify-content: flex-start;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.bridge-actions .primary-btn,
+.bridge-actions .secondary-btn {
+  min-height: 64px;
+  width: 100%;
+  justify-content: center;
+  font-weight: 700;
+}
+
+#bridge-control-pill {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .action-row {
