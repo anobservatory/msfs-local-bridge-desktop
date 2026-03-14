@@ -391,7 +391,7 @@ body.window-maximized .shell-scroll {
   display: grid;
   gap: 14px;
   align-content: start;
-  align-self: start;
+  align-self: stretch;
 }
 
 .bridge-head {
