@@ -234,6 +234,7 @@ function applyState(state) {
   setText("host-readiness-chip", state.blockerText);
   setText("host-ip", state.hostIp);
   setText("secure-stream", state.secureStream);
+  setText("bridge-state-detail", state.bridgeStatus);
   setText("secure-mode-detail", state.secureModeText);
   setText("listener-access-detail", state.listenerSetupState);
   setText("last-issue", state.lastIssue);
