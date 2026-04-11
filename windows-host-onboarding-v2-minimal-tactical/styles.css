@@ -200,6 +200,7 @@ pre {
   display: grid;
   gap: 4px;
   align-content: start;
+  min-width: 0;
 }
 
 .summary-row span {
@@ -213,7 +214,15 @@ pre {
   color: var(--text-primary);
   font-size: 1.08rem;
   line-height: 1.3;
+  display: block;
+  min-width: 0;
   overflow-wrap: anywhere;
+}
+
+#last-issue-inline {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .panel-checklist,
