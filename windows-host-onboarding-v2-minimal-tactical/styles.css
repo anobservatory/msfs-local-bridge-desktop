@@ -198,21 +198,21 @@ pre {
 
 .summary-row {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   align-content: start;
 }
 
 .summary-row span {
   color: var(--text-muted);
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
 .summary-row strong {
   color: var(--text-primary);
-  font-size: 1rem;
-  line-height: 1.35;
+  font-size: 1.08rem;
+  line-height: 1.3;
   overflow-wrap: anywhere;
 }
 
@@ -420,8 +420,8 @@ code,
   border-radius: var(--radius-1);
   background: var(--bg-input);
   color: #d9e5f3;
-  font-size: 0.84rem;
-  line-height: 1.45;
+  font-size: 1rem;
+  line-height: 1.55;
   overflow-wrap: anywhere;
 }
 
@@ -477,6 +477,25 @@ body.drawer-open .diagnostics-drawer {
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
+}
+
+.drawer-head > div {
+  display: grid;
+  gap: 4px;
+}
+
+.drawer-head h2 {
+  margin: 0;
+  font-size: 1.16rem;
+  line-height: 1.2;
+  font-weight: 650;
+}
+
+.diagnostics-drawer .button,
+.diagnostics-drawer .button-compact {
+  min-height: 38px;
+  padding: 0 15px;
+  font-size: 0.95rem;
 }
 
 .preview-switcher {
