@@ -246,6 +246,7 @@ pre {
 
 .panel-composite {
   display: grid;
+  align-content: start;
 }
 
 .panel-copy,
@@ -305,9 +306,9 @@ pre {
 
 .composite-stack {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto;
   gap: var(--space-4);
-  height: 100%;
+  align-content: start;
 }
 
 .composite-section {
