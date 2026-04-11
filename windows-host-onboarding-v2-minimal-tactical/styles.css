@@ -420,7 +420,7 @@ code,
   border-radius: var(--radius-1);
   background: var(--bg-input);
   color: #d9e5f3;
-  font-size: 1rem;
+  font-size: 0.94rem;
   line-height: 1.55;
   overflow-wrap: anywhere;
 }
@@ -439,8 +439,33 @@ code,
 }
 
 .log-view {
-  min-height: 260px;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(109, 141, 177, 0.94) rgba(9, 16, 25, 0.82);
   white-space: pre-wrap;
+}
+
+.log-view::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.log-view::-webkit-scrollbar-track {
+  background: rgba(9, 16, 25, 0.82);
+  border-radius: 999px;
+}
+
+.log-view::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(109, 141, 177, 0.94), rgba(76, 104, 136, 0.96));
+  border: 1px solid rgba(9, 16, 25, 0.88);
+  border-radius: 999px;
+}
+
+.log-view::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(126, 161, 201, 0.96), rgba(88, 118, 154, 0.98));
 }
 
 .drawer-scrim {
@@ -465,6 +490,7 @@ code,
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr);
   gap: var(--space-3);
+  overflow: hidden;
   z-index: 30;
 }
 

@@ -87,6 +87,10 @@ function closeDiagnosticsDrawer() {
   }
 }
 
+function applyWindowState(maximized) {
+  document.body.classList.toggle("window-maximized", Boolean(maximized));
+}
+
 function applyStateTone(element, value) {
   if (!element) {
     return;
@@ -431,6 +435,11 @@ if (window.chrome?.webview) {
 
     if (payload.type === "state") {
       applyState(payload.state);
+      return;
+    }
+
+    if (payload.type === "window-state") {
+      applyWindowState(payload.maximized);
       return;
     }
 

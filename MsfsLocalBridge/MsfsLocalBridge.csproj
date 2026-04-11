@@ -27,8 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\windows-host-onboarding-v1\**\*">
-      <Link>windows-host-onboarding-v1\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    <Content Include="..\windows-host-onboarding-v2-minimal-tactical\**\*">
+      <Link>windows-host-onboarding-v2-minimal-tactical\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
