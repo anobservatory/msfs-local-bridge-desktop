@@ -41,7 +41,7 @@ body {
 }
 
 body {
-  padding: var(--space-4);
+  padding: 14px;
 }
 
 body.drawer-open {
@@ -61,18 +61,18 @@ pre {
 }
 
 .app-shell {
-  min-height: calc(100vh - 32px);
+  min-height: calc(100vh - 28px);
   display: grid;
   grid-template-rows: auto 1fr;
-  gap: var(--space-4);
+  gap: var(--space-3);
 }
 
 .topbar {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: var(--space-4);
-  padding-bottom: var(--space-3);
+  gap: 12px;
+  padding-bottom: 8px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -85,10 +85,10 @@ pre {
 }
 
 .brand h1 {
-  font-size: 1.62rem;
+  font-size: 1.32rem;
   line-height: 1.1;
   font-weight: 650;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 .eyebrow,
@@ -108,7 +108,7 @@ pre {
 .diagnostics-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 6px;
 }
 
 .chip,
@@ -116,13 +116,13 @@ pre {
 .check-state {
   display: inline-flex;
   align-items: center;
-  min-height: 30px;
-  padding: 0 11px;
+  min-height: 26px;
+  padding: 0 9px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-1);
   color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.02);
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 600;
 }
 
@@ -153,28 +153,22 @@ pre {
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--space-3);
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  align-content: start;
 }
 
 .panel {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-2);
   background: var(--bg-panel);
-  padding: var(--space-4);
+  padding: 11px 14px;
 }
 
-.panel-primary,
-.panel-diagnostics {
-  grid-column: 1 / -1;
-}
-
-.current-step-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--space-3);
-  align-items: start;
+.panel-primary {
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 .current-step-main {
@@ -182,47 +176,46 @@ pre {
 }
 
 .current-step-main .panel-head {
-  margin-bottom: 10px;
+  margin-bottom: 4px;
 }
 
 .current-step-summary {
   min-width: 0;
-  border-left: 1px solid rgba(150, 170, 192, 0.12);
-  padding-left: var(--space-4);
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: var(--space-4);
-  row-gap: 18px;
-  align-content: start;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(150, 170, 192, 0.12);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.35;
 }
 
-.summary-row {
-  display: grid;
-  gap: 4px;
-  align-content: start;
-  min-width: 0;
-}
-
-.summary-row span {
+.current-step-summary b {
   color: var(--text-muted);
-  font-size: 0.74rem;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.summary-row strong {
+.current-step-summary strong {
   color: var(--text-primary);
-  font-size: 1.08rem;
-  line-height: 1.3;
-  display: block;
+  font-weight: 650;
+}
+
+.summary-issue {
   min-width: 0;
-  overflow-wrap: anywhere;
+  flex: 1 1 100%;
 }
 
 #last-issue-inline {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: inline-block;
+  max-width: calc(100% - 48px);
+  vertical-align: bottom;
 }
 
 .panel-checklist,
@@ -235,11 +228,11 @@ pre {
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-bottom: var(--space-3);
+  margin-bottom: 8px;
 }
 
 .panel-head h2 {
-  font-size: 1.16rem;
+  font-size: 1.05rem;
   line-height: 1.2;
   font-weight: 650;
 }
@@ -255,30 +248,35 @@ pre {
 .status-row dt {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 0.9rem;
-  line-height: 1.45;
+  font-size: 0.84rem;
+  line-height: 1.35;
 }
 
 .primary-actions {
-  margin-top: var(--space-3);
+  margin-top: 8px;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
+}
+
+body:not(.bridge-running) #stop-bridge-button,
+body:not(.bridge-running) #restart-bridge-button {
+  display: none;
 }
 
 .button {
-  min-height: 40px;
-  padding: 0 16px;
+  min-height: 36px;
+  padding: 0 13px;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-1);
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .current-step-main .button {
-  min-height: 38px;
-  padding: 0 15px;
-  font-size: 0.95rem;
+  min-height: 34px;
+  padding: 0 13px;
+  font-size: 0.9rem;
 }
 
 .button:disabled {
@@ -299,15 +297,49 @@ pre {
 }
 
 .button-compact {
-  min-height: 34px;
-  padding: 0 11px;
-  font-size: 0.86rem;
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 0.82rem;
+}
+
+.tabbar {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-1);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.tab-button {
+  min-width: 86px;
+  min-height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.tab-button.active {
+  color: var(--text-primary);
+  background: rgba(114, 173, 223, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(114, 173, 223, 0.24);
+}
+
+.panel-tab[hidden] {
+  display: none;
 }
 
 .composite-stack {
   display: grid;
-  grid-template-rows: auto auto;
-  gap: var(--space-4);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 18px;
   align-content: start;
 }
 
@@ -317,8 +349,10 @@ pre {
 }
 
 .composite-section-listener {
-  padding-top: var(--space-4);
-  border-top: 1px solid rgba(150, 170, 192, 0.12);
+  padding-top: 0;
+  padding-left: 18px;
+  border-top: 0;
+  border-left: 1px solid rgba(150, 170, 192, 0.12);
 }
 
 .composite-head {
@@ -335,22 +369,22 @@ pre {
 
 .composite-title {
   margin: 0;
-  font-size: 1.08rem;
+  font-size: 1rem;
   line-height: 1.2;
   font-weight: 650;
 }
 
 .checklist {
   display: grid;
-  gap: var(--space-2);
+  gap: 0;
 }
 
 .check-item {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
-  gap: var(--space-3);
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  gap: 10px;
   align-items: start;
-  padding: var(--space-3) 0;
+  padding: 7px 0;
   border-top: 1px solid rgba(150, 170, 192, 0.1);
 }
 
@@ -360,8 +394,8 @@ pre {
 }
 
 .check-order {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   display: grid;
   place-items: center;
   border: 1px solid var(--border-subtle);
@@ -373,24 +407,25 @@ pre {
 
 .check-copy {
   display: grid;
-  gap: var(--space-1);
+  gap: 2px;
 }
 
 .check-copy strong {
-  font-size: 1rem;
+  font-size: 0.96rem;
   font-weight: 600;
 }
 
 .check-meta {
-  display: grid;
-  gap: var(--space-2);
-  justify-items: end;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .status-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-2) var(--space-3);
+  gap: 8px 14px;
   margin: 0;
 }
 
@@ -404,7 +439,7 @@ pre {
 
 .status-row dd {
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1.35;
   margin: 0;
   overflow-wrap: anywhere;
@@ -412,8 +447,8 @@ pre {
 
 .field-stack {
   display: grid;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .field-block {
@@ -425,18 +460,18 @@ code,
 .log-view {
   display: block;
   margin: 0;
-  padding: 12px;
+  padding: 10px;
   border: 1px solid rgba(150, 170, 192, 0.14);
   border-radius: var(--radius-1);
   background: var(--bg-input);
   color: #d9e5f3;
-  font-size: 0.94rem;
-  line-height: 1.55;
+  font-size: 0.88rem;
+  line-height: 1.45;
   overflow-wrap: anywhere;
 }
 
 .listener-actions {
-  margin-top: var(--space-4);
+  margin-top: 12px;
 }
 
 #listener-panel[data-ready="false"] .listener-actions {
@@ -593,7 +628,7 @@ body.embedded-host .preview-switcher {
 
 }
 
-@media (max-width: 760px) {
+@media (max-width: 560px) {
   body {
     padding: var(--space-3);
   }

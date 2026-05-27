@@ -1,5 +1,7 @@
 const actionButtons = Array.from(document.querySelectorAll("[data-action]"));
 const previewButtons = Array.from(document.querySelectorAll("[data-preview-state]"));
+const tabButtons = Array.from(document.querySelectorAll("[data-tab-target]"));
+const tabPanels = Array.from(document.querySelectorAll("[data-tab-panel]"));
 const previewSwitcher = document.getElementById("preview-switcher");
 const focusActionButton = document.getElementById("focus-action-button");
 const listenerPanel = document.getElementById("listener-panel");
@@ -29,6 +31,12 @@ for (const button of previewButtons) {
     }
 
     applyState(state);
+  });
+}
+
+for (const button of tabButtons) {
+  button.addEventListener("click", () => {
+    activateTab(button.dataset.tabTarget);
   });
 }
 
@@ -204,6 +212,22 @@ function getRecommendedAction(state) {
   };
 }
 
+function activateTab(target) {
+  if (!target) {
+    return;
+  }
+
+  for (const button of tabButtons) {
+    button.classList.toggle("active", button.dataset.tabTarget === target);
+  }
+
+  for (const panel of tabPanels) {
+    const active = panel.dataset.tabPanel === target;
+    panel.classList.toggle("active", active);
+    panel.hidden = !active;
+  }
+}
+
 function lnaConnectionText(state) {
   if (state.canInstallDotNet || state.canInstallVcRedist) {
     return "Host setup needed";
@@ -236,6 +260,7 @@ function applyState(state) {
   const recommendation = getRecommendedAction(state);
   const connectionText = lnaConnectionText(state);
   const bridgeUrl = localBridgeUrl(state);
+  const bridgeRunning = Boolean(state.canStopBridge || state.canRestartBridge || state.bridgeStatus === "Running");
 
   setText("bridge-state-chip", state.bridgeControlText);
   setText("blocker-chip", state.blockerText);
@@ -289,6 +314,7 @@ function applyState(state) {
   setDisabled("open-bootstrap-page-button", !state.canUseListenerSetup);
 
   listenerPanel.dataset.ready = String(Boolean(state.canUseListenerSetup));
+  document.body.classList.toggle("bridge-running", bridgeRunning);
 
   const toneIds = [
     "bridge-state-chip",
@@ -466,7 +492,9 @@ if (window.chrome?.webview) {
   postHostMessage({ type: "ready" });
 } else {
   previewSwitcher.hidden = false;
-  const previewKey = new URLSearchParams(window.location.search).get("preview") || "setup-needed";
+  const query = new URLSearchParams(window.location.search);
+  const previewKey = query.get("preview") || "setup-needed";
+  activateTab(query.get("tab") || "setup");
   const previewState = previewStates[previewKey] || previewStates["setup-needed"];
   for (const button of previewButtons) {
     button.classList.toggle("active", button.dataset.previewState === previewKey);

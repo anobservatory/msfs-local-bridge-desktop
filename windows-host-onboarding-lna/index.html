@@ -21,57 +21,48 @@
       </header>
 
       <main class="layout">
-        <section class="panel panel-primary">
-          <div class="current-step-layout">
-            <div class="current-step-main">
-              <div class="panel-head">
-                <div>
-                  <p class="section-label">Current Step</p>
-                  <h2 id="focus-title">Finish host setup</h2>
-                </div>
-                <div class="inline-state" id="focus-state">Setup needed</div>
-              </div>
-              <p class="panel-copy" id="focus-copy">
-                Install the required host runtimes before starting the bridge.
-              </p>
-              <div class="primary-actions">
-                <button class="button button-primary" id="focus-action-button" data-action="install-dotnet">
-                  Install .NET Runtime
-                </button>
-                <button class="button button-secondary" data-action="stop-bridge" id="stop-bridge-button">
-                  Stop
-                </button>
-                <button class="button button-secondary" data-action="restart-bridge" id="restart-bridge-button">
-                  Restart
-                </button>
-                <button class="button button-secondary" type="button" id="open-diagnostics-button">
-                  Diagnostics
-                </button>
-              </div>
-            </div>
+        <nav class="tabbar" aria-label="Host console views">
+          <button class="tab-button active" type="button" data-tab-target="setup">Setup</button>
+          <button class="tab-button" type="button" data-tab-target="access">Access</button>
+        </nav>
 
-            <aside class="current-step-summary" aria-label="Current step summary">
-              <div class="summary-row">
-                <span>Bridge</span>
-                <strong id="bridge-status">Stopped</strong>
+        <section class="panel panel-primary">
+          <div class="current-step-main">
+            <div class="panel-head">
+              <div>
+                <p class="section-label">Current Step</p>
+                <h2 id="focus-title">Finish host setup</h2>
               </div>
-              <div class="summary-row">
-                <span>AO Access</span>
-                <strong id="listener-state-inline">Locked</strong>
-              </div>
-              <div class="summary-row">
-                <span>Connection</span>
-                <strong id="secure-mode-inline">Local network permission</strong>
-              </div>
-              <div class="summary-row">
-                <span>Last Issue</span>
-                <strong id="last-issue-inline">.NET runtime missing</strong>
-              </div>
-            </aside>
+              <div class="inline-state" id="focus-state">Setup needed</div>
+            </div>
+            <p class="panel-copy" id="focus-copy">
+              Install the required host runtimes before starting the bridge.
+            </p>
+            <div class="primary-actions">
+              <button class="button button-primary" id="focus-action-button" data-action="install-dotnet">
+                Install .NET Runtime
+              </button>
+              <button class="button button-secondary" data-action="stop-bridge" id="stop-bridge-button">
+                Stop
+              </button>
+              <button class="button button-secondary" data-action="restart-bridge" id="restart-bridge-button">
+                Restart
+              </button>
+              <button class="button button-secondary" type="button" id="open-diagnostics-button">
+                Diagnostics
+              </button>
+            </div>
           </div>
+
+          <aside class="current-step-summary" aria-label="Current step summary">
+            <span><b>Bridge</b> <strong id="bridge-status">Stopped</strong></span>
+            <span><b>AO</b> <strong id="listener-state-inline">Locked</strong></span>
+            <span><b>Connection</b> <strong id="secure-mode-inline">Local network permission</strong></span>
+            <span class="summary-issue"><b>Issue</b> <strong id="last-issue-inline">.NET runtime missing</strong></span>
+          </aside>
         </section>
 
-        <section class="panel panel-checklist">
+        <section class="panel panel-tab active" data-tab-panel="setup">
           <div class="panel-head">
             <div>
               <p class="section-label">Host Checklist</p>
@@ -152,7 +143,7 @@
           </div>
         </section>
 
-        <section class="panel panel-composite" id="listener-panel" data-ready="false">
+        <section class="panel panel-tab panel-composite" id="listener-panel" data-ready="false" data-tab-panel="access" hidden>
           <div class="panel-head">
             <div>
               <p class="section-label">Host Status And AO Access</p>
@@ -220,7 +211,6 @@
             </section>
           </div>
         </section>
-
       </main>
     </div>
 
