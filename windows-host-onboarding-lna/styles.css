@@ -181,41 +181,44 @@ pre {
 
 .current-step-summary {
   min-width: 0;
-  margin-top: 8px;
-  padding-top: 7px;
-  border-top: 1px solid rgba(150, 170, 192, 0.12);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  color: var(--text-secondary);
-  font-size: 0.82rem;
-  line-height: 1.35;
+  margin-top: 9px;
+  padding: 9px 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  border: 1px solid rgba(150, 170, 192, 0.1);
+  border-radius: var(--radius-1);
+  background: rgba(6, 12, 19, 0.22);
 }
 
-.current-step-summary b {
+.summary-cell {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.summary-cell span {
   color: var(--text-muted);
+  font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
   text-transform: uppercase;
 }
 
-.current-step-summary strong {
+.summary-cell strong {
   color: var(--text-primary);
+  font-size: 0.86rem;
   font-weight: 650;
-}
-
-.summary-issue {
-  min-width: 0;
-  flex: 1 1 100%;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 #last-issue-inline {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: inline-block;
-  max-width: calc(100% - 48px);
-  vertical-align: bottom;
+  display: block;
 }
 
 .panel-checklist,
@@ -612,14 +615,6 @@ body.embedded-host .preview-switcher {
 
   .current-step-layout {
     grid-template-columns: 1fr;
-  }
-
-  .current-step-summary {
-    grid-template-columns: 1fr;
-    border-left: 0;
-    border-top: 1px solid rgba(150, 170, 192, 0.12);
-    padding-left: 0;
-    padding-top: var(--space-3);
   }
 
   .composite-stack {
