@@ -10,7 +10,7 @@
     <AssemblyName>MsfsLocalBridge</AssemblyName>
     <RootNamespace>MsfsLocalBridge</RootNamespace>
     <Product>MSFS Local Bridge</Product>
-    <ApplicationIcon>..\ao.ico</ApplicationIcon>
+    <ApplicationIcon>..\ao_black.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

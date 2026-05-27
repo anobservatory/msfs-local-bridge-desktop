@@ -2,6 +2,7 @@
 .dotnet-cli-home/
 .nuget/
 working-build/
+dist/
 .vs/
 **/bin/
 **/obj/
