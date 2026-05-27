@@ -318,7 +318,6 @@ function applyState(state) {
   setText("secure-mode-detail", connectionText);
   setText("listener-access-detail", state.listenerSetupState);
   setText("last-issue", state.lastIssue);
-  setText("access-bridge-pill", state.bridgeStatus);
   setText("listener-readiness-pill", state.listenerSetupState);
   setText("secure-connect-url", state.connectUrl);
   setText("bootstrap-url", bridgeUrl);
@@ -358,7 +357,6 @@ function applyState(state) {
     "start-bridge-button",
     "open-ao-button",
     "host-readiness-chip",
-    "access-bridge-pill",
     "listener-readiness-pill"
   ];
 

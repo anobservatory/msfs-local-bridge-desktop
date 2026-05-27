@@ -233,14 +233,6 @@ pre {
   margin-bottom: 8px;
 }
 
-.panel-state-group {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-  min-width: 0;
-}
-
 .panel-head h2 {
   font-size: 1.05rem;
   line-height: 1.2;
