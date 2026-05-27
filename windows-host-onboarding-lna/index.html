@@ -201,17 +201,26 @@
 
               <div class="field-stack">
                 <div class="field-block">
-                  <span class="field-label">AO Connect URL</span>
+                  <div class="field-head">
+                    <span class="field-label">AO Connect URL</span>
+                    <button class="button button-secondary button-compact field-copy-button" data-action="copy-link" id="copy-link-button">
+                      Copy
+                    </button>
+                  </div>
                   <code id="secure-connect-url">Not available</code>
                 </div>
                 <div class="field-block">
-                  <span class="field-label">Local Bridge URL</span>
+                  <div class="field-head">
+                    <span class="field-label">Local Bridge URL</span>
+                    <button class="button button-secondary button-compact field-copy-button" data-action="copy-bootstrap-url" id="copy-bootstrap-url-button">
+                      Copy
+                    </button>
+                  </div>
                   <code id="bootstrap-url">Not available</code>
                 </div>
               </div>
 
               <div class="listener-actions">
-                <button class="button button-primary" data-action="copy-link" id="copy-link-button">Copy Link</button>
                 <button class="button button-secondary" data-action="open-bootstrap-page" id="open-bootstrap-page-button">Open AO</button>
                 <button class="button button-secondary" type="button" id="browser-access-note-button" disabled>Allow Browser Access</button>
               </div>

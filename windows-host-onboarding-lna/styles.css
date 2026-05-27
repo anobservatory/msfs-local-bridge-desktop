@@ -491,6 +491,20 @@ body:not(.bridge-running) #restart-bridge-button {
   gap: var(--space-2);
 }
 
+.field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.field-copy-button {
+  min-height: 24px;
+  padding: 0 9px;
+  font-size: 0.76rem;
+}
+
 code,
 .log-view {
   display: block;

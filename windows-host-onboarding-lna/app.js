@@ -341,6 +341,7 @@ function applyState(state) {
   setDisabled("stop-bridge-button", !state.canStopBridge);
   setDisabled("restart-bridge-button", !state.canRestartBridge);
   setDisabled("copy-link-button", !state.canUseListenerSetup);
+  setDisabled("copy-bootstrap-url-button", !state.canUseListenerSetup);
   setDisabled("open-bootstrap-page-button", !state.canUseListenerSetup);
 
   listenerPanel.dataset.ready = String(Boolean(state.canUseListenerSetup));
