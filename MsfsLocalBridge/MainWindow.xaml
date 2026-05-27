@@ -8,13 +8,14 @@
         mc:Ignorable="d"
         Title="MSFS Local Bridge"
         Icon="pack://application:,,,/Assets/ao.ico"
-        Width="1610"
-        Height="915"
-        MinWidth="1610"
-        MinHeight="915"
+        Width="680"
+        Height="960"
+        MinWidth="680"
+        MaxWidth="680"
+        MinHeight="420"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
-        ResizeMode="CanResize"
+        ResizeMode="NoResize"
         Background="#0B1420"
         BorderThickness="0">
     <Window.Resources>
@@ -124,7 +125,8 @@
                             <Button x:Name="MaximizeButton"
                                     Style="{StaticResource WindowControlButtonStyle}"
                                     Click="MaximizeButton_Click"
-                                    ToolTip="Maximize">
+                                    ToolTip="Maximize"
+                                    Visibility="Collapsed">
                                 <TextBlock x:Name="MaximizeGlyph"
                                            FontFamily="Segoe MDL2 Assets"
                                            FontSize="14"

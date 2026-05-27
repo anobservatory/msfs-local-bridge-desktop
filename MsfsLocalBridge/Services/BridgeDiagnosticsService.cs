@@ -23,7 +23,7 @@ internal sealed class BridgeDiagnosticsService
         var arguments = $"-ExecutionPolicy Bypass -File \"{_workspace.DiagnosticsScriptPath}\" -Format Json";
         var result = await _runner.RunAsync(_workspace.BridgeRepoRoot, arguments, cancellationToken);
 
-        if (result.ExitCode != 0)
+        if (string.IsNullOrWhiteSpace(result.StandardOutput))
         {
             throw new InvalidOperationException($"Diagnostics failed with exit code {result.ExitCode}: {result.StandardError}");
         }

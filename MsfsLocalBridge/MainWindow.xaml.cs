@@ -16,6 +16,9 @@ public partial class MainWindow : Window
 {
     private const int WmGetMinMaxInfoMessage = 0x0024;
     private const uint MonitorDefaultToNearest = 0x00000002;
+    private const double FixedWindowWidth = 680;
+    private const double MinimumWindowHeight = 420;
+    private const double WindowContentChromeHeight = 42;
     private static readonly Thickness NormalFrameMargin = new(0);
     private static readonly Thickness MaximizedFrameMargin = new(0);
     private static readonly CornerRadius NormalFrameRadius = new(24);
@@ -178,6 +181,12 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (string.Equals(envelope.Type, "resize", StringComparison.OrdinalIgnoreCase))
+        {
+            ApplyContentHeight(envelope.ContentHeight);
+            return;
+        }
+
         if (!string.Equals(envelope.Type, "action", StringComparison.OrdinalIgnoreCase))
         {
             return;
@@ -202,7 +211,6 @@ public partial class MainWindow : Window
                 WindowState = WindowState.Minimized;
                 return;
             case "toggle-maximize-window":
-                ToggleWindowState();
                 return;
             case "close-window":
                 Close();
@@ -218,11 +226,11 @@ public partial class MainWindow : Window
                 break;
             case "copy-link":
                 Clipboard.SetText(_currentState.ConnectUrl);
-                await PostNotificationAsync("Copied secure connect URL.");
+                await PostNotificationAsync("Copied AO connect URL.");
                 break;
             case "copy-bootstrap-url":
-                Clipboard.SetText(_currentState.BootstrapUrl);
-                await PostNotificationAsync("Copied bootstrap URL.");
+                Clipboard.SetText(_currentState.LocalBridgeUrl);
+                await PostNotificationAsync("Copied local bridge URL.");
                 break;
             case "copy-diagnostics":
                 Clipboard.SetText(_lastDiagnosticsJson);
@@ -244,7 +252,7 @@ public partial class MainWindow : Window
                 await PostNotificationAsync("Copied Windows bootstrap command.");
                 break;
             case "open-bootstrap-page":
-                OpenExternal(_currentState.BootstrapUrl);
+                OpenExternal(_currentState.ConnectUrl);
                 break;
             case "open-mobile-guide":
                 OpenExternal(_currentState.BootstrapUrl);
@@ -255,13 +263,10 @@ public partial class MainWindow : Window
             case "install-vcredist":
                 await PostNotificationAsync(await _prerequisiteInstaller.InstallVcRedistAsync());
                 break;
-            case "setup-secure-mode":
-                await RunScriptAndNotifyAsync(_workspace.CertSetupScriptPath, "Secure mode setup completed.");
-                break;
             case "open-firewall-rules":
                 _powerShellRunner.StartElevated(
                     _workspace.BridgeRepoRoot,
-                    $"-ExecutionPolicy Bypass -Command \"& '{_workspace.RepairScriptPath}' -Action OpenFirewall39000 -Port 39000; & '{_workspace.RepairScriptPath}' -Action OpenFirewall39002 -Port 39002\"");
+                    $"-ExecutionPolicy Bypass -Command \"& '{_workspace.RepairScriptPath}' -Action OpenFirewall39000 -Port 39000\"");
                 await PostNotificationAsync("Requested elevated firewall rule update.");
                 break;
         }
@@ -271,10 +276,49 @@ public partial class MainWindow : Window
 
     private void ToggleWindowState()
     {
-        WindowState = WindowState == WindowState.Maximized
-            ? WindowState.Normal
-            : WindowState.Maximized;
         ApplyFrameState();
+    }
+
+    private void ApplyContentHeight(double contentHeight)
+    {
+        if (double.IsNaN(contentHeight) || double.IsInfinity(contentHeight) || contentHeight <= 0)
+        {
+            return;
+        }
+
+        Width = FixedWindowWidth;
+        MinWidth = FixedWindowWidth;
+        MaxWidth = FixedWindowWidth;
+
+        var maxHeight = Math.Max(MinimumWindowHeight, SystemParameters.WorkArea.Height - 24);
+        var targetHeight = Math.Clamp(
+            Math.Ceiling(contentHeight + WindowContentChromeHeight),
+            MinimumWindowHeight,
+            maxHeight);
+
+        MinHeight = MinimumWindowHeight;
+        MaxHeight = maxHeight;
+
+        if (Math.Abs(Height - targetHeight) > 1)
+        {
+            Height = targetHeight;
+        }
+
+        KeepWindowInWorkArea();
+    }
+
+    private void KeepWindowInWorkArea()
+    {
+        var workArea = SystemParameters.WorkArea;
+        if (Left + Width > workArea.Right)
+        {
+            Left = Math.Max(workArea.Left, workArea.Right - Width);
+        }
+
+        if (Top + Height > workArea.Bottom)
+        {
+            Top = Math.Max(workArea.Top, workArea.Bottom - Height);
+        }
     }
 
     private void ApplyFrameState()
@@ -296,7 +340,6 @@ public partial class MainWindow : Window
 
         if (e.ClickCount == 2)
         {
-            ToggleWindowState();
             return;
         }
 
@@ -313,7 +356,6 @@ public partial class MainWindow : Window
 
     private void MaximizeButton_Click(object sender, RoutedEventArgs e)
     {
-        ToggleWindowState();
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
@@ -336,21 +378,6 @@ public partial class MainWindow : Window
         return null;
     }
 
-    private async Task RunScriptAndNotifyAsync(string scriptPath, string successMessage)
-    {
-        var result = await _powerShellRunner.RunAsync(
-            _workspace.BridgeRepoRoot,
-            $"-ExecutionPolicy Bypass -File \"{scriptPath}\"",
-            CancellationToken.None);
-
-        if (result.ExitCode != 0)
-        {
-            throw new InvalidOperationException(string.IsNullOrWhiteSpace(result.StandardError) ? result.StandardOutput : result.StandardError);
-        }
-
-        await PostNotificationAsync(successMessage);
-    }
-
     private async Task PublishStateAsync()
     {
         if (AppBrowser.CoreWebView2 is null)
@@ -370,7 +397,6 @@ public partial class MainWindow : Window
             _currentState = new AppState
             {
                 BlockerText = "Diagnostics error",
-                SecureModeText = "Diagnostics unavailable",
                 DotNetStatus = "Unknown",
                 SimConnectStatus = "Unknown",
                 BridgeStatus = _sessionService.IsRunning ? "Running" : "Stopped",
@@ -382,7 +408,6 @@ public partial class MainWindow : Window
                 CanStartBridge = false,
                 CanStopBridge = _sessionService.IsRunning,
                 CanRestartBridge = _sessionService.IsRunning,
-                CanSetupSecureMode = false,
                 CanOpenFirewallRules = false
             };
         }
@@ -480,4 +505,5 @@ internal sealed class WebMessageEnvelope
 {
     public string Type { get; set; } = string.Empty;
     public string Action { get; set; } = string.Empty;
+    public double ContentHeight { get; set; }
 }

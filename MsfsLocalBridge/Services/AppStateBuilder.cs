@@ -9,29 +9,21 @@ internal sealed class AppStateBuilder
     {
         var lanCheck = FindCheck(diagnostics, "network.lan_ipv4");
         var firewallBridgeCheck = FindCheck(diagnostics, "network.firewall_private_39000");
-        var firewallWssCheck = FindCheck(diagnostics, "network.firewall_private_39002");
         var portBridgeCheck = FindCheck(diagnostics, "network.port_39000");
-        var portWssCheck = FindCheck(diagnostics, "network.port_39002");
-        var pfxCheck = FindCheck(diagnostics, "network.wss_pfx");
-        var certCheck = FindCheck(diagnostics, "network.wss_cert");
-        var keyCheck = FindCheck(diagnostics, "network.wss_key");
-        var rootCaCheck = FindCheck(diagnostics, "network.root_ca");
 
         var hostIp = ExtractLanIp(lanCheck?.Message) ?? "Not available";
-        var secureStreamUrl = hostIp == "Not available" ? "Not available" : $"wss://{hostIp}:39002/stream";
+        var localBridgeUrl = hostIp == "Not available" ? "Not available" : $"ws://{hostIp}:39000/stream";
         var bootstrapUrl = hostIp == "Not available" ? "Not available" : $"http://{hostIp}:39000/bootstrap";
-        var connectUrl = secureStreamUrl == "Not available"
+        var connectUrl = localBridgeUrl == "Not available"
             ? "Not available"
-            : $"https://anobservatory.com/?msfsBridgeUrl={WebUtility.UrlEncode(secureStreamUrl)}";
+            : $"https://anobservatory.com/?msfsBridgeUrl={WebUtility.UrlEncode(localBridgeUrl)}";
 
-        var hasCertificateMaterial = pfxCheck?.Status == "pass" || (certCheck?.Status == "pass" && keyCheck?.Status == "pass");
-        var secureModeReady = hasCertificateMaterial && rootCaCheck?.Status == "pass";
-        var firewallReady = firewallBridgeCheck?.Status == "pass" && firewallWssCheck?.Status == "pass";
-        var portsAvailable = portBridgeCheck?.Status == "pass" && portWssCheck?.Status == "pass";
+        var firewallReady = firewallBridgeCheck?.Status == "pass";
+        var portAvailable = portBridgeCheck?.Status == "pass" || session.IsRunning;
         var hasRequiredHostRuntime = prerequisites.HasRequiredDotNetRuntimes && prerequisites.HasVcRedist;
-        var bridgeStartReady = hasRequiredHostRuntime && secureModeReady && firewallReady;
-        var hasBootstrapAddress = bootstrapUrl != "Not available";
-        var listenerSetupReady = bridgeStartReady && session.IsRunning && hasBootstrapAddress;
+        var bridgeStartReady = hasRequiredHostRuntime && firewallReady && portAvailable;
+        var hasLocalBridgeAddress = localBridgeUrl != "Not available";
+        var listenerSetupReady = bridgeStartReady && session.IsRunning && hasLocalBridgeAddress;
         var issues = new List<string>();
         var startFailure = session.LastFailureReason;
         var hasStartFailure = !string.IsNullOrWhiteSpace(startFailure);
@@ -53,6 +45,7 @@ internal sealed class AppStateBuilder
 
         var prioritizedChecks = diagnostics.Checks
             .Where(check => check.Status != "pass")
+            .Where(check => IsRelevantLnaCheck(check.Id, session.IsRunning))
             .OrderBy(check => PriorityFor(check.Id))
             .ThenBy(check => check.Id, StringComparer.OrdinalIgnoreCase)
             .Select(check => check.Message);
@@ -60,13 +53,13 @@ internal sealed class AppStateBuilder
 
         var blockerCount = (prerequisites.HasRequiredDotNetRuntimes ? 0 : 1)
             + (prerequisites.HasVcRedist ? 0 : 1)
-            + (secureModeReady ? 0 : 1)
-            + (firewallReady ? 0 : 1);
+            + (firewallReady ? 0 : 1)
+            + (portAvailable ? 0 : 1);
 
-        var bootstrapStatus = BuildBootstrapStatus(hasRequiredHostRuntime, secureModeReady, firewallReady, session.IsRunning, hasBootstrapAddress);
+        var bootstrapStatus = BuildBootstrapStatus(hasRequiredHostRuntime, firewallReady, portAvailable, session.IsRunning, hasLocalBridgeAddress);
         var startBridgeState = session.IsRunning ? "Running" : bridgeStartReady ? "Action" : "Locked";
-        var startBridgeNote = BuildStartBridgeNote(hasRequiredHostRuntime, secureModeReady, firewallReady, session.IsRunning, bootstrapUrl, hasStartFailure, startFailure);
-        var listenerSetupNote = BuildListenerSetupNote(hasRequiredHostRuntime, secureModeReady, firewallReady, session.IsRunning, hasBootstrapAddress);
+        var startBridgeNote = BuildStartBridgeNote(hasRequiredHostRuntime, firewallReady, portAvailable, session.IsRunning, localBridgeUrl, hasStartFailure, startFailure);
+        var listenerSetupNote = BuildListenerSetupNote(hasRequiredHostRuntime, firewallReady, portAvailable, session.IsRunning, hasLocalBridgeAddress);
 
         var bridgeStatus = session.IsRunning
             ? "Running"
@@ -103,7 +96,6 @@ internal sealed class AppStateBuilder
         return new AppState
         {
             BlockerText = blockerCount == 1 ? "1 blocker" : $"{blockerCount} blockers",
-            SecureModeText = secureModeReady ? "Secure mode ready" : "Secure mode required",
             DotNetStatus = prerequisites.DotNetRuntimeStatus,
             SimConnectStatus = simConnectStatus,
             BridgeStatus = bridgeStatus,
@@ -111,9 +103,10 @@ internal sealed class AppStateBuilder
             BridgeControlText = bridgeControlText,
             PrimaryActionText = primaryActionText,
             HostIp = hostIp,
-            SecureStream = secureStreamUrl == "Not available" ? "Not available" : "39002 /stream",
+            SecureStream = localBridgeUrl == "Not available" ? "Not available" : "39000 /stream",
             LastIssue = issues.FirstOrDefault() ?? "No issues",
             ConnectUrl = connectUrl,
+            LocalBridgeUrl = localBridgeUrl,
             BootstrapUrl = bootstrapUrl,
             RuntimeLog = string.IsNullOrWhiteSpace(session.RuntimeLog) ? diagnosticsJson : session.RuntimeLog,
             DotNetStepText = prerequisites.HasRequiredDotNetRuntimes ? "Installed" : "Action",
@@ -122,8 +115,7 @@ internal sealed class AppStateBuilder
             VcRedistStepText = prerequisites.HasVcRedist ? "Installed" : "Action",
             VcRedistButtonText = prerequisites.HasVcRedist ? "Installed" : "Install VC++ Runtime",
             VcRedistCurrentNote = prerequisites.HasVcRedist ? prerequisites.VcRedistStatus : "not installed on this PC.",
-            SecureModeStepText = secureModeReady ? "Ready" : (hasRequiredHostRuntime ? "Action" : "Locked"),
-            FirewallStepText = firewallReady ? "Ready" : (hasRequiredHostRuntime && secureModeReady ? "Action" : "Locked"),
+            FirewallStepText = firewallReady ? "Ready" : (hasRequiredHostRuntime ? "Action" : "Locked"),
             StartBridgeStepText = startBridgeState,
             StartBridgeButtonText = session.IsRunning ? "Bridge Running" : "Start Bridge",
             StartBridgeCurrentNote = startBridgeNote,
@@ -134,22 +126,16 @@ internal sealed class AppStateBuilder
             CanRestartBridge = session.IsRunning,
             CanInstallDotNet = !prerequisites.HasRequiredDotNetRuntimes,
             CanInstallVcRedist = !prerequisites.HasVcRedist,
-            CanSetupSecureMode = hasRequiredHostRuntime,
-            CanOpenFirewallRules = hasRequiredHostRuntime && secureModeReady,
+            CanOpenFirewallRules = hasRequiredHostRuntime,
             CanUseListenerSetup = listenerSetupReady
         };
     }
 
-    private static string BuildBootstrapStatus(bool hasRequiredHostRuntime, bool secureModeReady, bool firewallReady, bool bridgeRunning, bool hasBootstrapAddress)
+    private static string BuildBootstrapStatus(bool hasRequiredHostRuntime, bool firewallReady, bool portAvailable, bool bridgeRunning, bool hasLocalBridgeAddress)
     {
         if (!hasRequiredHostRuntime)
         {
             return "Install runtimes";
-        }
-
-        if (!secureModeReady)
-        {
-            return "Secure mode first";
         }
 
         if (!firewallReady)
@@ -157,12 +143,17 @@ internal sealed class AppStateBuilder
             return "Firewall first";
         }
 
+        if (!portAvailable)
+        {
+            return "Port in use";
+        }
+
         if (!bridgeRunning)
         {
             return "Start bridge first";
         }
 
-        if (!hasBootstrapAddress)
+        if (!hasLocalBridgeAddress)
         {
             return "LAN IP needed";
         }
@@ -170,13 +161,13 @@ internal sealed class AppStateBuilder
         return "Ready";
     }
 
-    private static string BuildStartBridgeNote(bool hasRequiredHostRuntime, bool secureModeReady, bool firewallReady, bool bridgeRunning, string bootstrapUrl, bool hasStartFailure, string? startFailure)
+    private static string BuildStartBridgeNote(bool hasRequiredHostRuntime, bool firewallReady, bool portAvailable, bool bridgeRunning, string localBridgeUrl, bool hasStartFailure, string? startFailure)
     {
         if (bridgeRunning)
         {
-            return bootstrapUrl == "Not available"
+            return localBridgeUrl == "Not available"
                 ? "Bridge is running, but the host LAN address is not available yet."
-                : $"Bridge is running. Listener setup is available from {bootstrapUrl}.";
+                : $"Bridge is running at {localBridgeUrl}. Open AO and allow browser local network access.";
         }
 
         if (hasStartFailure)
@@ -189,47 +180,47 @@ internal sealed class AppStateBuilder
             return "Install .NET and VC++ on this host PC first.";
         }
 
-        if (!secureModeReady)
-        {
-            return "Generate secure mode certificates on this host PC before starting the bridge.";
-        }
-
         if (!firewallReady)
         {
-            return "Open firewall rules as Administrator on this host PC before starting the bridge.";
+            return "Open inbound TCP 39000 on the private network before starting the bridge.";
         }
 
-        return "Start the bridge to serve the bootstrap page and listener setup scripts.";
+        if (!portAvailable)
+        {
+            return "TCP 39000 is already in use. Stop the conflicting process before starting the bridge.";
+        }
+
+        return "Start the local stream before opening AO in the browser.";
     }
 
-    private static string BuildListenerSetupNote(bool hasRequiredHostRuntime, bool secureModeReady, bool firewallReady, bool bridgeRunning, bool hasBootstrapAddress)
+    private static string BuildListenerSetupNote(bool hasRequiredHostRuntime, bool firewallReady, bool portAvailable, bool bridgeRunning, bool hasLocalBridgeAddress)
     {
         if (!hasRequiredHostRuntime)
         {
             return "Install .NET and VC++ on the host PC first.";
         }
 
-        if (!secureModeReady)
-        {
-            return "On the host PC, finish Secure Mode before onboarding listener devices.";
-        }
-
         if (!firewallReady)
         {
-            return "On the host PC, open firewall rules as Administrator before onboarding listener devices.";
+            return "Open inbound TCP 39000 on the private network before opening AO.";
+        }
+
+        if (!portAvailable)
+        {
+            return "TCP 39000 is already in use. Stop the conflicting process before starting the bridge.";
         }
 
         if (!bridgeRunning)
         {
-            return "Start the bridge on the host PC before using any Mac, Windows, or mobile setup commands.";
+            return "Start the bridge on the host PC before opening AO.";
         }
 
-        if (!hasBootstrapAddress)
+        if (!hasLocalBridgeAddress)
         {
-            return "The host LAN address could not be detected yet, so listener bootstrap is unavailable.";
+            return "The host LAN address could not be detected yet, so AO cannot connect from this network.";
         }
 
-        return "Host is ready. On Windows listeners, open Administrator PowerShell before running the copied setup command.";
+        return "Open AO with this link, then allow the browser local network prompt.";
     }
 
     private static int PriorityFor(string id)
@@ -255,6 +246,24 @@ internal sealed class AppStateBuilder
         }
 
         return 4;
+    }
+
+    private static bool IsRelevantLnaCheck(string id, bool bridgeRunning)
+    {
+        if (id.StartsWith("network.wss_", StringComparison.OrdinalIgnoreCase) ||
+            id.StartsWith("network.root_ca", StringComparison.OrdinalIgnoreCase) ||
+            id.StartsWith("network.firewall_private_39002", StringComparison.OrdinalIgnoreCase) ||
+            id.StartsWith("network.port_39002", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (bridgeRunning && id.StartsWith("network.port_39000", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private static DiagnosticsCheck? FindCheck(DiagnosticsResult diagnostics, string id)

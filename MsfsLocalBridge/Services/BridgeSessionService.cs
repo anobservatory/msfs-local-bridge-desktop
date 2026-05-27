@@ -129,7 +129,7 @@ internal sealed class BridgeSessionService
         var arguments = new StringBuilder();
         arguments.Append("-ExecutionPolicy Bypass -File \"");
         arguments.Append(_workspace.BridgeScriptPath);
-        arguments.Append("\" -SkipLanHints");
+        arguments.Append("\" -SkipLanHints -DisableWss");
 
         var supportsWorkerMode = ScriptSupportsWorkerMode(_workspace.BridgeScriptPath);
         var workerExecutablePath = ResolveWorkerExecutablePath();

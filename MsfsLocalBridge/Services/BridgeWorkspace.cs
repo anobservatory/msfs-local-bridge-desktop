@@ -9,7 +9,6 @@ internal sealed class BridgeWorkspace
     public string BridgeRepoRoot { get; }
     public string BridgeScriptPath { get; }
     public string DiagnosticsScriptPath { get; }
-    public string CertSetupScriptPath { get; }
     public string RepairScriptPath { get; }
     public bool UsesBundledBridge { get; }
 
@@ -38,7 +37,6 @@ internal sealed class BridgeWorkspace
 
         BridgeScriptPath = Path.Combine(BridgeRepoRoot, "run-bridge.ps1");
         DiagnosticsScriptPath = Path.Combine(BridgeRepoRoot, "diagnostics-v0.ps1");
-        CertSetupScriptPath = Path.Combine(BridgeRepoRoot, "setup-wss-cert-v0.ps1");
         RepairScriptPath = Path.Combine(BridgeRepoRoot, "repair-elevated-v0.ps1");
     }
 

@@ -34,10 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\msfs-local-bridge\bin\Release\net10.0-windows\win-x64\**\*">
-      <Link>bridge\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="..\..\msfs-local-bridge\workers\simconnect-native\dist\**\*">
       <Link>bridge\workers\simconnect-native\dist\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -54,15 +50,38 @@
       <Link>bridge\run-bridge.ps1</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\msfs-local-bridge\setup-wss-cert-v0.ps1">
-      <Link>bridge\setup-wss-cert-v0.ps1</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="..\..\msfs-local-bridge\preflight-v0.ps1">
       <Link>bridge\preflight-v0.ps1</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <Target Name="PublishBundledBridge" AfterTargets="Build">
+    <PropertyGroup>
+      <BundledBridgeProject>..\..\msfs-local-bridge\MsfsLocalBridge.csproj</BundledBridgeProject>
+      <BundledBridgePublishDir>$(IntermediateOutputPath)bridge-publish\</BundledBridgePublishDir>
+    </PropertyGroup>
+
+    <Exec Command="dotnet publish &quot;$(BundledBridgeProject)&quot; -c $(Configuration) -r win-x64 --self-contained false -o &quot;$(BundledBridgePublishDir)&quot;" />
+
+    <ItemGroup>
+      <BundledBridgePublishedFiles Include="$(BundledBridgePublishDir)**\*" />
+      <BundledBridgeLibFiles Include="..\..\msfs-local-bridge\lib\**\*" />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(BundledBridgePublishedFiles)"
+      DestinationFiles="@(BundledBridgePublishedFiles->'$(OutDir)bridge\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+    <Copy
+      SourceFiles="@(BundledBridgeLibFiles)"
+      DestinationFiles="@(BundledBridgeLibFiles->'$(OutDir)bridge\%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+    <Copy
+      SourceFiles="@(BundledBridgeLibFiles)"
+      DestinationFiles="@(BundledBridgeLibFiles->'$(OutDir)bridge\lib\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>
 

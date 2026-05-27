@@ -79,6 +79,14 @@ pre {
   gap: var(--space-3);
 }
 
+body.embedded-host .app-shell {
+  min-height: auto;
+}
+
+body.embedded-host {
+  min-height: 0;
+}
+
 .topbar {
   display: flex;
   align-items: flex-end;

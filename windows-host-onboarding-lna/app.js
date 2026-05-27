@@ -9,6 +9,7 @@ const openDiagnosticsButton = document.getElementById("open-diagnostics-button")
 const closeDiagnosticsButton = document.getElementById("close-diagnostics-button");
 const diagnosticsDrawer = document.getElementById("diagnostics-drawer");
 const drawerScrim = document.getElementById("drawer-scrim");
+let resizeFrame = 0;
 
 for (const button of actionButtons) {
   button.addEventListener("click", () => {
@@ -58,6 +59,33 @@ function postHostMessage(payload) {
   window.chrome.webview.postMessage(payload);
 }
 
+function scheduleHostResize() {
+  if (!window.chrome?.webview) {
+    return;
+  }
+
+  if (resizeFrame) {
+    cancelAnimationFrame(resizeFrame);
+  }
+
+  resizeFrame = requestAnimationFrame(() => {
+    resizeFrame = 0;
+    const appShell = document.querySelector(".app-shell");
+    const bodyStyle = getComputedStyle(document.body);
+    const verticalPadding =
+      parseFloat(bodyStyle.paddingTop || "0") +
+      parseFloat(bodyStyle.paddingBottom || "0");
+    const contentHeight = Math.ceil(Math.max(
+      appShell ? appShell.getBoundingClientRect().height + verticalPadding : 0,
+      document.body.scrollHeight
+    ));
+    postHostMessage({
+      type: "resize",
+      contentHeight
+    });
+  });
+}
+
 function setText(id, value) {
   const element = document.getElementById(id);
   if (element) {
@@ -85,6 +113,7 @@ function openDiagnosticsDrawer() {
   if (drawerScrim) {
     drawerScrim.hidden = false;
   }
+  scheduleHostResize();
 }
 
 function closeDiagnosticsDrawer() {
@@ -93,6 +122,7 @@ function closeDiagnosticsDrawer() {
   if (drawerScrim) {
     drawerScrim.hidden = true;
   }
+  scheduleHostResize();
 }
 
 function applyWindowState(maximized) {
@@ -227,6 +257,8 @@ function activateTab(target) {
     panel.classList.toggle("active", active);
     panel.hidden = !active;
   }
+
+  scheduleHostResize();
 }
 
 function lnaConnectionText(state) {
@@ -364,6 +396,8 @@ function applyState(state) {
   for (const id of toneIds) {
     applyStateTone(document.getElementById(id), document.getElementById(id)?.textContent);
   }
+
+  scheduleHostResize();
 }
 
 function isRecommendedActionDisabled(action, state) {
@@ -521,6 +555,7 @@ if (window.chrome?.webview) {
   });
 
   postHostMessage({ type: "ready" });
+  scheduleHostResize();
 } else {
   previewSwitcher.hidden = false;
   const query = new URLSearchParams(window.location.search);
@@ -532,3 +567,6 @@ if (window.chrome?.webview) {
   }
   applyState(previewState);
 }
+
+window.addEventListener("load", scheduleHostResize);
+window.addEventListener("resize", scheduleHostResize);
