@@ -52,7 +52,19 @@ button,
 input,
 textarea,
 select {
+  appearance: none;
+  -webkit-appearance: none;
   font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  background-clip: padding-box;
+}
+
+button::-moz-focus-inner {
+  border: 0;
+  padding: 0;
 }
 
 code,
@@ -274,6 +286,12 @@ body:not(.bridge-running) #restart-bridge-button {
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 600;
+  transition:
+    transform 80ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    opacity 120ms ease;
 }
 
 .current-step-main .button {
@@ -285,6 +303,25 @@ body:not(.bridge-running) #restart-bridge-button {
 .button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.button:focus,
+.button:focus-visible,
+.button:active,
+.tab-button:focus,
+.tab-button:focus-visible,
+.tab-button:active,
+.preview-button:focus,
+.preview-button:focus-visible,
+.preview-button:active {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.button:not(:disabled):active,
+.tab-button:not(:disabled):active,
+.preview-button:not(:disabled):active {
+  transform: translateY(1px);
 }
 
 .check-action {
@@ -359,6 +396,11 @@ body:not(.bridge-running) #restart-bridge-button {
   cursor: pointer;
   font-size: 0.88rem;
   font-weight: 600;
+  transition:
+    transform 80ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease,
+    color 120ms ease;
 }
 
 .tab-button.active {
@@ -642,6 +684,12 @@ body.drawer-open .diagnostics-drawer {
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 600;
+  transition:
+    transform 80ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    color 120ms ease;
 }
 
 .preview-button.active {
