@@ -155,22 +155,12 @@ function getRecommendedAction(state) {
     };
   }
 
-  if (state.secureModeStepText !== "Ready") {
-    return {
-      action: "setup-secure-mode",
-      label: "Set Up Secure Mode",
-      title: "Finish secure mode",
-      copy: "Generate and trust the local WSS certificate materials before starting the bridge.",
-      tone: "Secure mode first"
-    };
-  }
-
   if (state.firewallStepText !== "Ready") {
     return {
       action: "open-firewall-rules",
-      label: "Open Firewall Rules",
-      title: "Open the required firewall rules",
-      copy: "Listener devices stay blocked until the host PC allows the bridge ports through Windows Firewall.",
+      label: "Open Firewall Rule",
+      title: "Open local bridge access",
+      copy: "Allow inbound TCP 39000 so AO can reach the bridge from this network.",
       tone: "Firewall first"
     };
   }
@@ -180,7 +170,7 @@ function getRecommendedAction(state) {
       action: "start-bridge",
       label: state.startBridgeButtonText || "Start Bridge",
       title: "Start the bridge",
-      copy: state.listenerSetupNote,
+      copy: "Start the local stream before opening AO in the browser.",
       tone: "Ready to start"
     };
   }
@@ -188,9 +178,9 @@ function getRecommendedAction(state) {
   if (state.canUseListenerSetup) {
     return {
       action: "copy-link",
-      label: "Copy Connect Link",
-      title: "Onboard listener devices",
-      copy: state.listenerSetupNote,
+      label: "Copy AO Link",
+      title: "Open AO",
+      copy: "Open AO with the local bridge URL, then allow the browser local network prompt.",
       tone: "Bridge running"
     };
   }
@@ -200,7 +190,7 @@ function getRecommendedAction(state) {
       action: "restart-bridge",
       label: "Restart Bridge",
       title: "Bridge is running",
-      copy: state.listenerSetupNote,
+      copy: "AO can connect once the browser is allowed to access the local network.",
       tone: "Running"
     };
   }
@@ -214,37 +204,70 @@ function getRecommendedAction(state) {
   };
 }
 
+function lnaConnectionText(state) {
+  if (state.canInstallDotNet || state.canInstallVcRedist) {
+    return "Host setup needed";
+  }
+
+  if (state.canUseListenerSetup || state.bridgeStatus === "Running") {
+    return "Browser permission";
+  }
+
+  if (state.firewallStepText !== "Ready") {
+    return "Firewall 39000 needed";
+  }
+
+  return "Local WS mode";
+}
+
+function localBridgeUrl(state) {
+  if (state.localBridgeUrl) {
+    return state.localBridgeUrl;
+  }
+
+  if (state.hostIp && state.hostIp !== "Not available") {
+    return `ws://${state.hostIp}:39000/stream`;
+  }
+
+  return "Not available";
+}
+
 function applyState(state) {
   const recommendation = getRecommendedAction(state);
+  const connectionText = lnaConnectionText(state);
+  const bridgeUrl = localBridgeUrl(state);
 
   setText("bridge-state-chip", state.bridgeControlText);
   setText("blocker-chip", state.blockerText);
-  setText("secure-chip", state.secureModeText);
+  setText("secure-chip", connectionText);
   setText("focus-title", recommendation.title);
   setText("focus-copy", recommendation.copy);
   setText("focus-state", recommendation.tone);
   setText("bridge-status", state.bridgeStatus);
   setText("listener-state-inline", state.listenerSetupState);
-  setText("secure-mode-inline", state.secureModeText);
+  setText("secure-mode-inline", connectionText);
   setText("last-issue-inline", state.lastIssue);
   setText("dotnet-step-state", state.dotNetStepText);
   setText("dotnet-current-note", state.dotNetCurrentNote);
   setText("vcredist-step-state", state.vcRedistStepText);
   setText("vcredist-current-note", state.vcRedistCurrentNote);
-  setText("secure-mode-state", state.secureModeStepText);
   setText("firewall-state", state.firewallStepText);
   setText("start-bridge-step-state", state.startBridgeStepText);
   setText("start-bridge-current-note", state.startBridgeCurrentNote);
+  setText("open-ao-step-state", state.canUseListenerSetup ? "Action" : "Locked");
+  setText("open-ao-current-note", state.canUseListenerSetup
+    ? "Copy the AO link, open it in Chrome or Edge, then allow local network access."
+    : "Start the bridge before opening AO.");
   setText("host-readiness-chip", state.blockerText);
   setText("host-ip", state.hostIp);
   setText("secure-stream", state.secureStream);
   setText("bridge-state-detail", state.bridgeStatus);
-  setText("secure-mode-detail", state.secureModeText);
+  setText("secure-mode-detail", connectionText);
   setText("listener-access-detail", state.listenerSetupState);
   setText("last-issue", state.lastIssue);
   setText("listener-readiness-pill", state.listenerSetupState);
   setText("secure-connect-url", state.connectUrl);
-  setText("bootstrap-url", state.bootstrapUrl);
+  setText("bootstrap-url", bridgeUrl);
   setText("runtime-log", state.runtimeLog);
 
   focusActionButton.dataset.action = recommendation.action;
@@ -257,16 +280,13 @@ function applyState(state) {
   setDisabled("focus-action-button", isRecommendedActionDisabled(recommendation.action, state));
   setDisabled("install-dotnet-button", !state.canInstallDotNet);
   setDisabled("install-vcredist-button", !state.canInstallVcRedist);
-  setDisabled("setup-secure-mode-button", !state.canSetupSecureMode);
   setDisabled("open-firewall-rules-button", !state.canOpenFirewallRules);
   setDisabled("start-bridge-button", !state.canStartBridge);
+  setDisabled("open-ao-button", !state.canUseListenerSetup);
   setDisabled("stop-bridge-button", !state.canStopBridge);
   setDisabled("restart-bridge-button", !state.canRestartBridge);
   setDisabled("copy-link-button", !state.canUseListenerSetup);
-  setDisabled("copy-windows-setup-button", !state.canUseListenerSetup);
-  setDisabled("copy-mac-setup-button", !state.canUseListenerSetup);
   setDisabled("open-bootstrap-page-button", !state.canUseListenerSetup);
-  setDisabled("open-mobile-guide-button", !state.canUseListenerSetup);
 
   listenerPanel.dataset.ready = String(Boolean(state.canUseListenerSetup));
 
@@ -277,9 +297,9 @@ function applyState(state) {
     "focus-state",
     "dotnet-step-state",
     "vcredist-step-state",
-    "secure-mode-state",
     "firewall-state",
     "start-bridge-step-state",
+    "open-ao-step-state",
     "host-readiness-chip",
     "listener-readiness-pill"
   ];
@@ -295,8 +315,6 @@ function isRecommendedActionDisabled(action, state) {
       return !state.canInstallDotNet;
     case "install-vcredist":
       return !state.canInstallVcRedist;
-    case "setup-secure-mode":
-      return !state.canSetupSecureMode;
     case "open-firewall-rules":
       return !state.canOpenFirewallRules;
     case "start-bridge":
@@ -312,8 +330,8 @@ function isRecommendedActionDisabled(action, state) {
 
 const previewStates = {
   "setup-needed": {
-    blockerText: "3 blockers",
-    secureModeText: "Secure mode required",
+    blockerText: "2 blockers",
+    secureModeText: "Local WS mode",
     dotNetStatus: "Missing desktop + ASP.NET runtimes",
     simConnectStatus: "Finish setup",
     bridgeStatus: "Setup needed",
@@ -321,10 +339,11 @@ const previewStates = {
     bridgeControlText: "Setup needed",
     primaryActionText: "Finish Setup",
     hostIp: "192.168.0.24",
-    secureStream: "39002 /stream",
+    secureStream: "39000 /stream",
     lastIssue: "Missing required .NET runtimes.",
     connectUrl: "Not available",
-    bootstrapUrl: "http://192.168.0.24:39000/bootstrap",
+    localBridgeUrl: "ws://192.168.0.24:39000/stream",
+    bootstrapUrl: "ws://192.168.0.24:39000/stream",
     runtimeLog: "[09:05:12] prerequisite-check: .NET runtimes x64 not found\n[09:05:13] prerequisite-check: VC++ runtime found",
     dotNetStepText: "Action",
     dotNetButtonText: "Install .NET Runtime",
@@ -332,7 +351,6 @@ const previewStates = {
     vcRedistStepText: "Installed",
     vcRedistButtonText: "Installed",
     vcRedistCurrentNote: "VC++ runtime is already installed.",
-    secureModeStepText: "Locked",
     firewallStepText: "Locked",
     startBridgeStepText: "Locked",
     startBridgeButtonText: "Start Bridge",
@@ -344,13 +362,12 @@ const previewStates = {
     canRestartBridge: false,
     canInstallDotNet: true,
     canInstallVcRedist: false,
-    canSetupSecureMode: false,
     canOpenFirewallRules: false,
     canUseListenerSetup: false
   },
   "ready-to-start": {
     blockerText: "0 blockers",
-    secureModeText: "Secure mode ready",
+    secureModeText: "Browser permission",
     dotNetStatus: "Installed",
     simConnectStatus: "Waiting for bridge",
     bridgeStatus: "Ready to start",
@@ -358,36 +375,35 @@ const previewStates = {
     bridgeControlText: "Ready",
     primaryActionText: "Start Bridge",
     hostIp: "192.168.0.24",
-    secureStream: "39002 /stream",
+    secureStream: "39000 /stream",
     lastIssue: "No issues",
-    connectUrl: "https://anobservatory.com/?msfsBridgeUrl=wss%3A%2F%2F192.168.0.24%3A39002%2Fstream",
-    bootstrapUrl: "http://192.168.0.24:39000/bootstrap",
-    runtimeLog: "[09:08:41] prerequisite-check: all host requirements satisfied\n[09:08:42] secure-mode: certificate material present",
+    connectUrl: "https://anobservatory.com/?msfsBridgeUrl=ws%3A%2F%2F192.168.0.24%3A39000%2Fstream",
+    localBridgeUrl: "ws://192.168.0.24:39000/stream",
+    bootstrapUrl: "ws://192.168.0.24:39000/stream",
+    runtimeLog: "[09:08:41] prerequisite-check: all host requirements satisfied\n[09:08:42] firewall-check: TCP 39000 allowed",
     dotNetStepText: "Installed",
     dotNetButtonText: "Installed",
     dotNetCurrentNote: "Required .NET runtimes are installed on this PC.",
     vcRedistStepText: "Installed",
     vcRedistButtonText: "Installed",
     vcRedistCurrentNote: "VC++ runtime is already installed.",
-    secureModeStepText: "Ready",
     firewallStepText: "Ready",
     startBridgeStepText: "Action",
     startBridgeButtonText: "Start Bridge",
-    startBridgeCurrentNote: "Start the bridge to serve the bootstrap page and listener setup scripts.",
+    startBridgeCurrentNote: "Start the bridge before opening AO.",
     listenerSetupState: "Start bridge first",
-    listenerSetupNote: "Start the bridge on the host PC before using any Mac, Windows, or mobile setup commands.",
+    listenerSetupNote: "Start the bridge on the host PC before opening AO.",
     canStartBridge: true,
     canStopBridge: false,
     canRestartBridge: false,
     canInstallDotNet: false,
     canInstallVcRedist: false,
-    canSetupSecureMode: true,
     canOpenFirewallRules: true,
     canUseListenerSetup: false
   },
   running: {
     blockerText: "0 blockers",
-    secureModeText: "Secure mode ready",
+    secureModeText: "Browser permission",
     dotNetStatus: "Installed",
     simConnectStatus: "Waiting for flight",
     bridgeStatus: "Running",
@@ -395,30 +411,29 @@ const previewStates = {
     bridgeControlText: "Running",
     primaryActionText: "Bridge Running",
     hostIp: "192.168.0.24",
-    secureStream: "39002 /stream",
+    secureStream: "39000 /stream",
     lastIssue: "No issues",
-    connectUrl: "https://anobservatory.com/?msfsBridgeUrl=wss%3A%2F%2F192.168.0.24%3A39002%2Fstream",
-    bootstrapUrl: "http://192.168.0.24:39000/bootstrap",
-    runtimeLog: "[09:12:04] bridge-start: host bootstrap page online\n[09:12:05] secure-stream: listening on wss://192.168.0.24:39002/stream",
+    connectUrl: "https://anobservatory.com/?msfsBridgeUrl=ws%3A%2F%2F192.168.0.24%3A39000%2Fstream",
+    localBridgeUrl: "ws://192.168.0.24:39000/stream",
+    bootstrapUrl: "ws://192.168.0.24:39000/stream",
+    runtimeLog: "[09:12:04] bridge-start: local stream online\n[09:12:05] local-stream: listening on ws://192.168.0.24:39000/stream",
     dotNetStepText: "Installed",
     dotNetButtonText: "Installed",
     dotNetCurrentNote: "Required .NET runtimes are installed on this PC.",
     vcRedistStepText: "Installed",
     vcRedistButtonText: "Installed",
     vcRedistCurrentNote: "VC++ runtime is already installed.",
-    secureModeStepText: "Ready",
     firewallStepText: "Ready",
     startBridgeStepText: "Running",
     startBridgeButtonText: "Bridge Running",
-    startBridgeCurrentNote: "Bridge is running. Listener setup is available from http://192.168.0.24:39000/bootstrap.",
+    startBridgeCurrentNote: "Bridge is running. Open AO and allow browser local network access.",
     listenerSetupState: "Ready",
-    listenerSetupNote: "On Windows listeners, open Administrator PowerShell before running the copied setup command.",
+    listenerSetupNote: "Open AO with this link, then allow the browser local network prompt.",
     canStartBridge: false,
     canStopBridge: true,
     canRestartBridge: true,
     canInstallDotNet: false,
     canInstallVcRedist: false,
-    canSetupSecureMode: true,
     canOpenFirewallRules: true,
     canUseListenerSetup: true
   }
@@ -451,5 +466,10 @@ if (window.chrome?.webview) {
   postHostMessage({ type: "ready" });
 } else {
   previewSwitcher.hidden = false;
-  applyState(previewStates["setup-needed"]);
+  const previewKey = new URLSearchParams(window.location.search).get("preview") || "setup-needed";
+  const previewState = previewStates[previewKey] || previewStates["setup-needed"];
+  for (const button of previewButtons) {
+    button.classList.toggle("active", button.dataset.previewState === previewKey);
+  }
+  applyState(previewState);
 }

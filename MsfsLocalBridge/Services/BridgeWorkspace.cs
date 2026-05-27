@@ -15,7 +15,7 @@ internal sealed class BridgeWorkspace
 
     public BridgeWorkspace()
     {
-        HostConsoleRoot = Path.Combine(AppContext.BaseDirectory, "windows-host-onboarding-v2-minimal-tactical");
+        HostConsoleRoot = Path.Combine(AppContext.BaseDirectory, "windows-host-onboarding-lna");
         HostConsoleIndexPath = Path.Combine(HostConsoleRoot, "index.html");
 
         var bundledBridgeRoot = ResolveBundledBridgeRoot();
