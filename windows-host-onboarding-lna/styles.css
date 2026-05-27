@@ -112,8 +112,7 @@ pre {
 }
 
 .chip,
-.inline-state,
-.check-state {
+.inline-state {
   display: inline-flex;
   align-items: center;
   min-height: 26px;
@@ -295,6 +294,15 @@ body:not(.bridge-running) #restart-bridge-button {
   cursor: not-allowed;
 }
 
+.check-action {
+  min-width: 112px;
+}
+
+.check-action:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
 .button-primary {
   border-color: rgba(114, 173, 223, 0.34);
   background: rgba(114, 173, 223, 0.16);
@@ -311,6 +319,30 @@ body:not(.bridge-running) #restart-bridge-button {
   min-height: 28px;
   padding: 0 10px;
   font-size: 0.82rem;
+}
+
+.check-action.state-caution {
+  color: var(--state-caution);
+  background: var(--state-caution-soft);
+  border-color: rgba(216, 163, 93, 0.28);
+}
+
+.check-action.state-positive {
+  color: var(--state-positive);
+  background: var(--state-positive-soft);
+  border-color: rgba(120, 184, 139, 0.28);
+}
+
+.check-action.state-active {
+  color: var(--state-active);
+  background: var(--state-active-soft);
+  border-color: rgba(114, 173, 223, 0.3);
+}
+
+.check-action.state-critical {
+  color: var(--state-critical);
+  background: var(--state-critical-soft);
+  border-color: rgba(210, 109, 114, 0.3);
 }
 
 .tabbar {

@@ -126,6 +126,7 @@ function applyStateTone(element, value) {
     normalized.includes("required") ||
     normalized.includes("first") ||
     normalized.includes("needed") ||
+    normalized.startsWith("install ") ||
     normalized.includes("action") ||
     normalized.includes("locked") ||
     normalized.includes("setup")
@@ -256,6 +257,38 @@ function localBridgeUrl(state) {
   return "Not available";
 }
 
+function blockedChecklistLabel(state) {
+  if (state.canInstallDotNet || state.canInstallVcRedist) {
+    return "Install runtimes";
+  }
+
+  if (state.firewallStepText !== "Ready") {
+    return "Open firewall first";
+  }
+
+  return state.listenerSetupState || "Not ready";
+}
+
+function bridgeStartButtonLabel(state) {
+  if (state.canStartBridge) {
+    return state.startBridgeButtonText || "Start Bridge";
+  }
+
+  if (state.bridgeStatus === "Running" || state.startBridgeStepText === "Running") {
+    return "Running";
+  }
+
+  return blockedChecklistLabel(state);
+}
+
+function openAoButtonLabel(state) {
+  if (state.canUseListenerSetup) {
+    return "Copy Link";
+  }
+
+  return state.listenerSetupState || blockedChecklistLabel(state);
+}
+
 function applyState(state) {
   const recommendation = getRecommendedAction(state);
   const connectionText = lnaConnectionText(state);
@@ -272,17 +305,12 @@ function applyState(state) {
   setText("listener-state-inline", state.listenerSetupState);
   setText("secure-mode-inline", connectionText);
   setText("last-issue-inline", state.lastIssue);
-  setText("dotnet-step-state", state.dotNetStepText);
   setText("dotnet-current-note", state.dotNetCurrentNote);
-  setText("vcredist-step-state", state.vcRedistStepText);
   setText("vcredist-current-note", state.vcRedistCurrentNote);
-  setText("firewall-state", state.firewallStepText);
-  setText("start-bridge-step-state", state.startBridgeStepText);
   setText("start-bridge-current-note", state.startBridgeCurrentNote);
-  setText("open-ao-step-state", state.canUseListenerSetup ? "Action" : "Locked");
   setText("open-ao-current-note", state.canUseListenerSetup
     ? "Copy the AO link, open it in Chrome or Edge, then allow local network access."
-    : "Start the bridge before opening AO.");
+    : state.listenerSetupNote);
   setText("host-readiness-chip", state.blockerText);
   setText("host-ip", state.hostIp);
   setText("secure-stream", state.secureStream);
@@ -301,7 +329,9 @@ function applyState(state) {
 
   setActionButtonText("install-dotnet-button", state.dotNetButtonText);
   setActionButtonText("install-vcredist-button", state.vcRedistButtonText);
-  setActionButtonText("start-bridge-button", state.startBridgeButtonText);
+  setActionButtonText("open-firewall-rules-button", state.canOpenFirewallRules ? "Open Rule" : blockedChecklistLabel(state));
+  setActionButtonText("start-bridge-button", bridgeStartButtonLabel(state));
+  setActionButtonText("open-ao-button", openAoButtonLabel(state));
 
   setDisabled("focus-action-button", isRecommendedActionDisabled(recommendation.action, state));
   setDisabled("install-dotnet-button", !state.canInstallDotNet);
@@ -322,11 +352,11 @@ function applyState(state) {
     "blocker-chip",
     "secure-chip",
     "focus-state",
-    "dotnet-step-state",
-    "vcredist-step-state",
-    "firewall-state",
-    "start-bridge-step-state",
-    "open-ao-step-state",
+    "install-dotnet-button",
+    "install-vcredist-button",
+    "open-firewall-rules-button",
+    "start-bridge-button",
+    "open-ao-button",
     "host-readiness-chip",
     "access-bridge-pill",
     "listener-readiness-pill"
