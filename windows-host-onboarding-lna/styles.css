@@ -81,10 +81,20 @@ pre {
 
 body.embedded-host .app-shell {
   min-height: auto;
+  overflow: clip;
 }
 
+html.embedded-host,
 body.embedded-host {
   min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  scrollbar-width: none;
+}
+
+html.embedded-host::-webkit-scrollbar,
+body.embedded-host::-webkit-scrollbar {
+  display: none;
 }
 
 .topbar {

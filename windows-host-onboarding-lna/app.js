@@ -10,6 +10,7 @@ const closeDiagnosticsButton = document.getElementById("close-diagnostics-button
 const diagnosticsDrawer = document.getElementById("diagnostics-drawer");
 const drawerScrim = document.getElementById("drawer-scrim");
 let resizeFrame = 0;
+let hostResizeObserver = null;
 
 for (const button of actionButtons) {
   button.addEventListener("click", () => {
@@ -75,15 +76,65 @@ function scheduleHostResize() {
     const verticalPadding =
       parseFloat(bodyStyle.paddingTop || "0") +
       parseFloat(bodyStyle.paddingBottom || "0");
-    const contentHeight = Math.ceil(Math.max(
-      appShell ? appShell.getBoundingClientRect().height + verticalPadding : 0,
-      document.body.scrollHeight
-    ));
+    const contentHeight = Math.ceil(
+      appShell ? appShell.getBoundingClientRect().height + verticalPadding : document.body.offsetHeight
+    );
     postHostMessage({
       type: "resize",
       contentHeight
     });
   });
+}
+
+function startHostResizeObserver() {
+  if (!window.chrome?.webview || hostResizeObserver || !window.ResizeObserver) {
+    return;
+  }
+
+  const appShell = document.querySelector(".app-shell");
+  hostResizeObserver = new ResizeObserver(scheduleHostResize);
+  hostResizeObserver.observe(document.body);
+  if (appShell) {
+    hostResizeObserver.observe(appShell);
+  }
+}
+
+function getScrollableLogView(target) {
+  const element = target instanceof Element ? target : target?.parentElement;
+  return element?.closest(".log-view") || null;
+}
+
+function preventEmbeddedOverscroll(event) {
+  if (!document.body.classList.contains("embedded-host")) {
+    return;
+  }
+
+  const logView = getScrollableLogView(event.target);
+  if (!logView) {
+    event.preventDefault();
+    window.scrollTo(0, 0);
+    return;
+  }
+
+  const maxScrollTop = logView.scrollHeight - logView.clientHeight;
+  if (maxScrollTop <= 0) {
+    event.preventDefault();
+    return;
+  }
+
+  const movingUp = event.deltaY < 0;
+  const movingDown = event.deltaY > 0;
+  const atTop = logView.scrollTop <= 0;
+  const atBottom = logView.scrollTop >= maxScrollTop - 1;
+  if ((movingUp && atTop) || (movingDown && atBottom)) {
+    event.preventDefault();
+  }
+}
+
+function keepEmbeddedDocumentPinned() {
+  if (document.body.classList.contains("embedded-host")) {
+    window.scrollTo(0, 0);
+  }
 }
 
 function setText(id, value) {
@@ -531,7 +582,9 @@ const previewStates = {
 };
 
 if (window.chrome?.webview) {
+  document.documentElement.classList.add("embedded-host");
   document.body.classList.add("embedded-host");
+  startHostResizeObserver();
 
   window.chrome.webview.addEventListener("message", (event) => {
     const payload = event.data;
@@ -570,3 +623,5 @@ if (window.chrome?.webview) {
 
 window.addEventListener("load", scheduleHostResize);
 window.addEventListener("resize", scheduleHostResize);
+window.addEventListener("scroll", keepEmbeddedDocumentPinned, { passive: true });
+document.addEventListener("wheel", preventEmbeddedOverscroll, { passive: false });
