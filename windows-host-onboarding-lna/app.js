@@ -267,10 +267,10 @@ function getRecommendedAction(state) {
 
   if (state.canUseListenerSetup) {
     return {
-      action: "copy-link",
-      label: "Copy AO Link",
+      action: "open-bootstrap-page",
+      label: "Open AO",
       title: "Open AO",
-      copy: "Open AO with the local bridge URL, then allow the browser local network prompt.",
+      copy: "Open AO from here to use the current bridge URL for this session. After that, use anobservatory.com normally.",
       tone: "Bridge running"
     };
   }
