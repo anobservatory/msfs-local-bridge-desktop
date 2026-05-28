@@ -220,7 +220,7 @@ internal sealed class AppStateBuilder
             return "The host LAN address could not be detected yet, so AO cannot connect from this network.";
         }
 
-        return "Open AO from here to use the current bridge URL for this session. After that, use anobservatory.com normally.";
+        return "Open AO with this session's bridge URL. After that, use anobservatory.com normally.";
     }
 
     private static int PriorityFor(string id)

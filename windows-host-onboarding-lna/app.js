@@ -9,6 +9,7 @@ const openDiagnosticsButton = document.getElementById("open-diagnostics-button")
 const closeDiagnosticsButton = document.getElementById("close-diagnostics-button");
 const diagnosticsDrawer = document.getElementById("diagnostics-drawer");
 const drawerScrim = document.getElementById("drawer-scrim");
+const openAoSessionCopy = "Open AO with this session's bridge URL. After that, use anobservatory.com normally.";
 let resizeFrame = 0;
 let hostResizeObserver = null;
 
@@ -270,7 +271,7 @@ function getRecommendedAction(state) {
       action: "open-bootstrap-page",
       label: "Open AO",
       title: "Open AO",
-      copy: "Open AO from here to use the current bridge URL for this session. After that, use anobservatory.com normally.",
+      copy: openAoSessionCopy,
       tone: "Bridge running"
     };
   }
@@ -366,7 +367,7 @@ function bridgeStartButtonLabel(state) {
 
 function openAoButtonLabel(state) {
   if (state.canUseListenerSetup) {
-    return "Copy Link";
+    return "Open AO";
   }
 
   return state.listenerSetupState || blockedChecklistLabel(state);
@@ -392,7 +393,7 @@ function applyState(state) {
   setText("vcredist-current-note", state.vcRedistCurrentNote);
   setText("start-bridge-current-note", state.startBridgeCurrentNote);
   setText("open-ao-current-note", state.canUseListenerSetup
-    ? "Copy the AO link, open it in Chrome or Edge, then allow local network access."
+    ? openAoSessionCopy
     : state.listenerSetupNote);
   setText("host-readiness-chip", state.blockerText);
   setText("host-ip", state.hostIp);
@@ -570,7 +571,7 @@ const previewStates = {
     startBridgeButtonText: "Bridge Running",
     startBridgeCurrentNote: "Bridge is running. Open AO and allow browser local network access.",
     listenerSetupState: "Ready",
-    listenerSetupNote: "Open AO with this link, then allow the browser local network prompt.",
+    listenerSetupNote: openAoSessionCopy,
     canStartBridge: false,
     canStopBridge: true,
     canRestartBridge: true,
