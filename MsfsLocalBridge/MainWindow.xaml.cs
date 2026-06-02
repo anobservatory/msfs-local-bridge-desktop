@@ -15,7 +15,9 @@ namespace MsfsLocalBridge;
 public partial class MainWindow : Window
 {
     private const int WmGetMinMaxInfoMessage = 0x0024;
+    private const int WmDpiChangedMessage = 0x02E0;
     private const uint MonitorDefaultToNearest = 0x00000002;
+    private const uint MonitorDefaultToPrimary = 0x00000001;
     private const double FixedWindowWidth = 680;
     private const double MinimumWindowWidth = 520;
     private const double MinimumWindowHeight = 420;
@@ -34,12 +36,18 @@ public partial class MainWindow : Window
     private readonly AppStateBuilder _stateBuilder = new();
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private readonly DispatcherTimer _refreshTimer;
+    private readonly string _settingsDirectory = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "MSFS Local Bridge");
+    private readonly string _windowPlacementPath;
     private string _lastDiagnosticsJson = string.Empty;
+    private double _lastContentHeight;
     private AppState _currentState = new();
 
     public MainWindow()
     {
         InitializeComponent();
+        _windowPlacementPath = Path.Combine(_settingsDirectory, "window-placement.json");
         ApplyFrameState();
         _sessionService = new BridgeSessionService(_workspace, _powerShellRunner);
         _diagnosticsService = new BridgeDiagnosticsService(_workspace, _powerShellRunner);
@@ -60,6 +68,8 @@ public partial class MainWindow : Window
         {
             source.AddHook(WindowProc);
         }
+
+        ApplyInitialWindowPlacement();
     }
 
     private IntPtr WindowProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -68,6 +78,21 @@ public partial class MainWindow : Window
         {
             ApplyWindowBounds(hwnd, lParam);
             handled = true;
+        }
+        else if (msg == WmDpiChangedMessage)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                if (_lastContentHeight > 0)
+                {
+                    ApplyContentHeight(_lastContentHeight);
+                }
+                else
+                {
+                    ApplyWindowSizeLimits(GetCurrentMonitorWorkArea());
+                    KeepWindowInWorkArea();
+                }
+            }, DispatcherPriority.Background);
         }
 
         return IntPtr.Zero;
@@ -105,6 +130,7 @@ public partial class MainWindow : Window
     private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
         _refreshTimer.Stop();
+        SaveWindowPlacement();
 
         try
         {
@@ -161,6 +187,15 @@ public partial class MainWindow : Window
         try
         {
             DragMove();
+            if (_lastContentHeight > 0)
+            {
+                ApplyContentHeight(_lastContentHeight);
+            }
+            else
+            {
+                ApplyWindowSizeLimits(GetCurrentMonitorWorkArea());
+                KeepWindowInWorkArea();
+            }
         }
         catch
         {
@@ -288,13 +323,9 @@ public partial class MainWindow : Window
             return;
         }
 
+        _lastContentHeight = contentHeight;
         var workArea = GetCurrentMonitorWorkArea();
-        var maxWidth = Math.Max(MinimumWindowWidth, workArea.Width - WorkAreaPadding);
-        var targetWidth = Math.Clamp(FixedWindowWidth, MinimumWindowWidth, maxWidth);
-
-        Width = targetWidth;
-        MinWidth = targetWidth;
-        MaxWidth = targetWidth;
+        ApplyWindowSizeLimits(workArea);
 
         var maxHeight = Math.Max(MinimumWindowHeight, workArea.Height - WorkAreaPadding);
         var targetHeight = Math.Clamp(
@@ -313,9 +344,55 @@ public partial class MainWindow : Window
         KeepWindowInWorkArea();
     }
 
+    private void ApplyInitialWindowPlacement()
+    {
+        if (TryLoadWindowPlacement(out var placement))
+        {
+            Width = SanitizeDimension(placement.Width, FixedWindowWidth, MinimumWindowWidth, FixedWindowWidth);
+            Height = SanitizeDimension(placement.Height, Height, MinimumWindowHeight, double.MaxValue);
+            Left = placement.Left;
+            Top = placement.Top;
+
+            var workArea = GetCurrentMonitorWorkArea();
+            ApplyWindowSizeLimits(workArea);
+            KeepWindowInWorkArea();
+            return;
+        }
+
+        var cursorWorkArea = GetCursorMonitorWorkArea();
+        var targetWidth = ApplyWindowSizeLimits(cursorWorkArea);
+        var targetHeight = Math.Clamp(Height, MinimumWindowHeight, Math.Max(MinimumWindowHeight, cursorWorkArea.Height - WorkAreaPadding));
+        Height = targetHeight;
+        Left = cursorWorkArea.Left + Math.Max(0, (cursorWorkArea.Width - targetWidth) / 2);
+        Top = cursorWorkArea.Top + Math.Max(0, (cursorWorkArea.Height - targetHeight) / 2);
+        KeepWindowInWorkArea();
+    }
+
+    private double ApplyWindowSizeLimits(Rect workArea)
+    {
+        var maxWidth = Math.Max(MinimumWindowWidth, workArea.Width - WorkAreaPadding);
+        var targetWidth = Math.Clamp(FixedWindowWidth, MinimumWindowWidth, maxWidth);
+        Width = targetWidth;
+        MinWidth = targetWidth;
+        MaxWidth = targetWidth;
+        MinHeight = MinimumWindowHeight;
+        MaxHeight = Math.Max(MinimumWindowHeight, workArea.Height - WorkAreaPadding);
+        return targetWidth;
+    }
+
     private void KeepWindowInWorkArea()
     {
         var workArea = GetCurrentMonitorWorkArea();
+        if (Left < workArea.Left)
+        {
+            Left = workArea.Left;
+        }
+
+        if (Top < workArea.Top)
+        {
+            Top = workArea.Top;
+        }
+
         if (Left + Width > workArea.Right)
         {
             Left = Math.Max(workArea.Left, workArea.Right - Width);
@@ -327,20 +404,37 @@ public partial class MainWindow : Window
         }
     }
 
+    private Rect GetCursorMonitorWorkArea()
+    {
+        if (!GetCursorPos(out var cursorPoint))
+        {
+            return GetPrimaryMonitorWorkArea();
+        }
+
+        var monitor = MonitorFromPoint(cursorPoint, MonitorDefaultToPrimary);
+        return monitor == IntPtr.Zero ? GetPrimaryMonitorWorkArea() : GetMonitorWorkArea(monitor);
+    }
+
     private Rect GetCurrentMonitorWorkArea()
     {
         var hwnd = new WindowInteropHelper(this).Handle;
         if (hwnd == IntPtr.Zero)
         {
-            return SystemParameters.WorkArea;
+            return GetPrimaryMonitorWorkArea();
         }
 
         var monitor = MonitorFromWindow(hwnd, MonitorDefaultToNearest);
-        if (monitor == IntPtr.Zero)
-        {
-            return SystemParameters.WorkArea;
-        }
+        return monitor == IntPtr.Zero ? GetPrimaryMonitorWorkArea() : GetMonitorWorkArea(monitor);
+    }
 
+    private Rect GetPrimaryMonitorWorkArea()
+    {
+        var monitor = MonitorFromPoint(new PointInt(), MonitorDefaultToPrimary);
+        return monitor == IntPtr.Zero ? SystemParameters.WorkArea : GetMonitorWorkArea(monitor);
+    }
+
+    private Rect GetMonitorWorkArea(IntPtr monitor)
+    {
         var monitorInfo = new MonitorInfo();
         monitorInfo.Size = Marshal.SizeOf<MonitorInfo>();
         if (!GetMonitorInfo(monitor, ref monitorInfo))
@@ -349,12 +443,98 @@ public partial class MainWindow : Window
         }
 
         var workArea = monitorInfo.WorkArea;
-        var dpi = System.Windows.Media.VisualTreeHelper.GetDpi(this);
+        var dpi = GetMonitorDpiScale(monitor);
         return new Rect(
-            workArea.Left / dpi.DpiScaleX,
-            workArea.Top / dpi.DpiScaleY,
-            Math.Abs(workArea.Right - workArea.Left) / dpi.DpiScaleX,
-            Math.Abs(workArea.Bottom - workArea.Top) / dpi.DpiScaleY);
+            workArea.Left / dpi.ScaleX,
+            workArea.Top / dpi.ScaleY,
+            Math.Abs(workArea.Right - workArea.Left) / dpi.ScaleX,
+            Math.Abs(workArea.Bottom - workArea.Top) / dpi.ScaleY);
+    }
+
+    private DpiScaleValue GetMonitorDpiScale(IntPtr monitor)
+    {
+        try
+        {
+            if (GetDpiForMonitor(monitor, MonitorDpiType.EffectiveDpi, out var dpiX, out var dpiY) == 0 && dpiX > 0 && dpiY > 0)
+            {
+                return new DpiScaleValue(dpiX / 96.0, dpiY / 96.0);
+            }
+        }
+        catch
+        {
+            // Fall back to WPF's current DPI when per-monitor DPI cannot be queried.
+        }
+
+        var dpi = System.Windows.Media.VisualTreeHelper.GetDpi(this);
+        return new DpiScaleValue(dpi.DpiScaleX, dpi.DpiScaleY);
+    }
+
+    private bool TryLoadWindowPlacement(out WindowPlacement placement)
+    {
+        placement = new WindowPlacement();
+
+        try
+        {
+            if (!File.Exists(_windowPlacementPath))
+            {
+                return false;
+            }
+
+            var json = File.ReadAllText(_windowPlacementPath);
+            var saved = JsonSerializer.Deserialize<WindowPlacement>(json, _jsonOptions);
+            if (saved is null || !IsFinite(saved.Left) || !IsFinite(saved.Top))
+            {
+                return false;
+            }
+
+            placement = saved;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private void SaveWindowPlacement()
+    {
+        try
+        {
+            Directory.CreateDirectory(_settingsDirectory);
+            var bounds = WindowState == WindowState.Normal ? new Rect(Left, Top, Width, Height) : RestoreBounds;
+            if (!IsFinite(bounds.Left) || !IsFinite(bounds.Top) || bounds.Width <= 0 || bounds.Height <= 0)
+            {
+                return;
+            }
+
+            var placement = new WindowPlacement
+            {
+                Left = bounds.Left,
+                Top = bounds.Top,
+                Width = bounds.Width,
+                Height = bounds.Height
+            };
+            File.WriteAllText(_windowPlacementPath, JsonSerializer.Serialize(placement, _jsonOptions));
+        }
+        catch
+        {
+            // Window placement is a convenience setting; failure should never block shutdown.
+        }
+    }
+
+    private static double SanitizeDimension(double value, double fallback, double min, double max)
+    {
+        if (!IsFinite(value) || value <= 0)
+        {
+            return fallback;
+        }
+
+        return Math.Clamp(value, min, max);
+    }
+
+    private static bool IsFinite(double value)
+    {
+        return !double.IsNaN(value) && !double.IsInfinity(value);
     }
 
     private void ApplyFrameState()
@@ -497,9 +677,26 @@ public partial class MainWindow : Window
     [DllImport("user32.dll")]
     private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromPoint(PointInt pt, uint flags);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetCursorPos(out PointInt lpPoint);
+
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfo lpmi);
+
+    [DllImport("shcore.dll")]
+    private static extern int GetDpiForMonitor(IntPtr hmonitor, MonitorDpiType dpiType, out uint dpiX, out uint dpiY);
+
+    private enum MonitorDpiType
+    {
+        EffectiveDpi = 0
+    }
+
+    private readonly record struct DpiScaleValue(double ScaleX, double ScaleY);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct PointInt
@@ -542,4 +739,12 @@ internal sealed class WebMessageEnvelope
     public string Type { get; set; } = string.Empty;
     public string Action { get; set; } = string.Empty;
     public double ContentHeight { get; set; }
+}
+
+internal sealed class WindowPlacement
+{
+    public double Left { get; set; }
+    public double Top { get; set; }
+    public double Width { get; set; }
+    public double Height { get; set; }
 }

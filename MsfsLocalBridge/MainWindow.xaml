@@ -13,7 +13,7 @@
         MinWidth="520"
         MaxWidth="680"
         MinHeight="420"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="Manual"
         WindowStyle="None"
         ResizeMode="NoResize"
         Background="#0B1420"
