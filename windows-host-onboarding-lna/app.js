@@ -77,8 +77,11 @@ function scheduleHostResize() {
     const verticalPadding =
       parseFloat(bodyStyle.paddingTop || "0") +
       parseFloat(bodyStyle.paddingBottom || "0");
+    const shellHeight = appShell
+      ? Math.max(appShell.scrollHeight, appShell.getBoundingClientRect().height)
+      : 0;
     const contentHeight = Math.ceil(
-      appShell ? appShell.getBoundingClientRect().height + verticalPadding : document.body.offsetHeight
+      appShell ? shellHeight + verticalPadding : document.body.scrollHeight
     );
     postHostMessage({
       type: "resize",
@@ -97,44 +100,6 @@ function startHostResizeObserver() {
   hostResizeObserver.observe(document.body);
   if (appShell) {
     hostResizeObserver.observe(appShell);
-  }
-}
-
-function getScrollableLogView(target) {
-  const element = target instanceof Element ? target : target?.parentElement;
-  return element?.closest(".log-view") || null;
-}
-
-function preventEmbeddedOverscroll(event) {
-  if (!document.body.classList.contains("embedded-host")) {
-    return;
-  }
-
-  const logView = getScrollableLogView(event.target);
-  if (!logView) {
-    event.preventDefault();
-    window.scrollTo(0, 0);
-    return;
-  }
-
-  const maxScrollTop = logView.scrollHeight - logView.clientHeight;
-  if (maxScrollTop <= 0) {
-    event.preventDefault();
-    return;
-  }
-
-  const movingUp = event.deltaY < 0;
-  const movingDown = event.deltaY > 0;
-  const atTop = logView.scrollTop <= 0;
-  const atBottom = logView.scrollTop >= maxScrollTop - 1;
-  if ((movingUp && atTop) || (movingDown && atBottom)) {
-    event.preventDefault();
-  }
-}
-
-function keepEmbeddedDocumentPinned() {
-  if (document.body.classList.contains("embedded-host")) {
-    window.scrollTo(0, 0);
   }
 }
 
@@ -624,5 +589,3 @@ if (window.chrome?.webview) {
 
 window.addEventListener("load", scheduleHostResize);
 window.addEventListener("resize", scheduleHostResize);
-window.addEventListener("scroll", keepEmbeddedDocumentPinned, { passive: true });
-document.addEventListener("wheel", preventEmbeddedOverscroll, { passive: false });

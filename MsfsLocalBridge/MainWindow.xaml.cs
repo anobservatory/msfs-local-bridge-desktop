@@ -17,8 +17,10 @@ public partial class MainWindow : Window
     private const int WmGetMinMaxInfoMessage = 0x0024;
     private const uint MonitorDefaultToNearest = 0x00000002;
     private const double FixedWindowWidth = 680;
+    private const double MinimumWindowWidth = 520;
     private const double MinimumWindowHeight = 420;
     private const double WindowContentChromeHeight = 42;
+    private const double WorkAreaPadding = 24;
     private static readonly Thickness NormalFrameMargin = new(0);
     private static readonly Thickness MaximizedFrameMargin = new(0);
     private static readonly CornerRadius NormalFrameRadius = new(24);
@@ -286,11 +288,15 @@ public partial class MainWindow : Window
             return;
         }
 
-        Width = FixedWindowWidth;
-        MinWidth = FixedWindowWidth;
-        MaxWidth = FixedWindowWidth;
+        var workArea = GetCurrentMonitorWorkArea();
+        var maxWidth = Math.Max(MinimumWindowWidth, workArea.Width - WorkAreaPadding);
+        var targetWidth = Math.Clamp(FixedWindowWidth, MinimumWindowWidth, maxWidth);
 
-        var maxHeight = Math.Max(MinimumWindowHeight, SystemParameters.WorkArea.Height - 24);
+        Width = targetWidth;
+        MinWidth = targetWidth;
+        MaxWidth = targetWidth;
+
+        var maxHeight = Math.Max(MinimumWindowHeight, workArea.Height - WorkAreaPadding);
         var targetHeight = Math.Clamp(
             Math.Ceiling(contentHeight + WindowContentChromeHeight),
             MinimumWindowHeight,
@@ -309,7 +315,7 @@ public partial class MainWindow : Window
 
     private void KeepWindowInWorkArea()
     {
-        var workArea = SystemParameters.WorkArea;
+        var workArea = GetCurrentMonitorWorkArea();
         if (Left + Width > workArea.Right)
         {
             Left = Math.Max(workArea.Left, workArea.Right - Width);
@@ -319,6 +325,36 @@ public partial class MainWindow : Window
         {
             Top = Math.Max(workArea.Top, workArea.Bottom - Height);
         }
+    }
+
+    private Rect GetCurrentMonitorWorkArea()
+    {
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd == IntPtr.Zero)
+        {
+            return SystemParameters.WorkArea;
+        }
+
+        var monitor = MonitorFromWindow(hwnd, MonitorDefaultToNearest);
+        if (monitor == IntPtr.Zero)
+        {
+            return SystemParameters.WorkArea;
+        }
+
+        var monitorInfo = new MonitorInfo();
+        monitorInfo.Size = Marshal.SizeOf<MonitorInfo>();
+        if (!GetMonitorInfo(monitor, ref monitorInfo))
+        {
+            return SystemParameters.WorkArea;
+        }
+
+        var workArea = monitorInfo.WorkArea;
+        var dpi = System.Windows.Media.VisualTreeHelper.GetDpi(this);
+        return new Rect(
+            workArea.Left / dpi.DpiScaleX,
+            workArea.Top / dpi.DpiScaleY,
+            Math.Abs(workArea.Right - workArea.Left) / dpi.DpiScaleX,
+            Math.Abs(workArea.Bottom - workArea.Top) / dpi.DpiScaleY);
     }
 
     private void ApplyFrameState()

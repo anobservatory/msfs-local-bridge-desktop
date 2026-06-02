@@ -10,7 +10,7 @@
         Icon="pack://application:,,,/Assets/ao_black.ico"
         Width="680"
         Height="960"
-        MinWidth="680"
+        MinWidth="520"
         MaxWidth="680"
         MinHeight="420"
         WindowStartupLocation="CenterScreen"
