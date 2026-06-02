@@ -32,7 +32,11 @@
 
   <ItemGroup>
     <Content Include="..\windows-host-onboarding-lna\**\*">
-      <Link>windows-host-onboarding-lna\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <Link>resources\host-console\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\README.txt">
+      <Link>README.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

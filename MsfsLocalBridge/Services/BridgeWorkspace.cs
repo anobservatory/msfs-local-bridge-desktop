@@ -14,7 +14,7 @@ internal sealed class BridgeWorkspace
 
     public BridgeWorkspace()
     {
-        HostConsoleRoot = Path.Combine(AppContext.BaseDirectory, "windows-host-onboarding-lna");
+        HostConsoleRoot = ResolveHostConsoleRoot();
         HostConsoleIndexPath = Path.Combine(HostConsoleRoot, "index.html");
 
         var bundledBridgeRoot = ResolveBundledBridgeRoot();
@@ -38,6 +38,23 @@ internal sealed class BridgeWorkspace
         BridgeScriptPath = Path.Combine(BridgeRepoRoot, "run-bridge.ps1");
         DiagnosticsScriptPath = Path.Combine(BridgeRepoRoot, "diagnostics-v0.ps1");
         RepairScriptPath = Path.Combine(BridgeRepoRoot, "repair-elevated-v0.ps1");
+    }
+
+    private static string ResolveHostConsoleRoot()
+    {
+        var bundledCandidate = Path.Combine(AppContext.BaseDirectory, "resources", "host-console");
+        if (HasHostConsole(bundledCandidate))
+        {
+            return bundledCandidate;
+        }
+
+        var legacyCandidate = Path.Combine(AppContext.BaseDirectory, "windows-host-onboarding-lna");
+        if (HasHostConsole(legacyCandidate))
+        {
+            return legacyCandidate;
+        }
+
+        return bundledCandidate;
     }
 
     private static string? ResolveBundledBridgeRoot()
@@ -69,6 +86,12 @@ internal sealed class BridgeWorkspace
         return Directory.Exists(candidate)
             && File.Exists(Path.Combine(candidate, "run-bridge.ps1"))
             && File.Exists(Path.Combine(candidate, "diagnostics-v0.ps1"));
+    }
+
+    private static bool HasHostConsole(string candidate)
+    {
+        return Directory.Exists(candidate)
+            && File.Exists(Path.Combine(candidate, "index.html"));
     }
 }
 
