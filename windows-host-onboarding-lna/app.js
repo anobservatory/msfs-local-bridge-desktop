@@ -350,10 +350,6 @@ function applyState(state) {
   setText("focus-title", recommendation.title);
   setText("focus-copy", recommendation.copy);
   setText("focus-state", recommendation.tone);
-  setText("bridge-status", state.bridgeStatus);
-  setText("listener-state-inline", state.listenerSetupState);
-  setText("secure-mode-inline", connectionText);
-  setText("last-issue-inline", state.lastIssue);
   setText("dotnet-current-note", state.dotNetCurrentNote);
   setText("vcredist-current-note", state.vcRedistCurrentNote);
   setText("start-bridge-current-note", state.startBridgeCurrentNote);
