@@ -141,7 +141,6 @@ body.embedded-host::-webkit-scrollbar {
 
 .topbar-status,
 .primary-actions,
-.listener-actions,
 .diagnostics-actions {
   display: flex;
   flex-wrap: wrap;
@@ -716,14 +715,6 @@ code,
   font-size: 0.88rem;
   line-height: 1.45;
   overflow-wrap: anywhere;
-}
-
-.listener-actions {
-  margin-top: 12px;
-}
-
-#listener-panel[data-ready="false"] .listener-actions {
-  opacity: 0.72;
 }
 
 .diagnostics-actions {
