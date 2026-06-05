@@ -6,7 +6,7 @@
     <title>MSFS Local Bridge Host Console v2</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
+  <body class="host-loading">
     <div class="app-shell">
       <header class="topbar">
         <div class="brand">
@@ -14,6 +14,7 @@
           <h1>Host Console</h1>
         </div>
         <div class="topbar-status">
+          <div class="chip state-active loading-chip">Checking host status</div>
           <div class="chip" id="bridge-state-chip">Stopped</div>
           <div class="chip" id="blocker-chip">2 blockers</div>
           <div class="chip chip-warn" id="secure-chip">Browser access needed</div>
@@ -25,6 +26,34 @@
           <button class="tab-button active" type="button" data-tab-target="setup">Setup</button>
           <button class="tab-button" type="button" data-tab-target="access">Access</button>
         </nav>
+
+        <section class="panel loading-panel" aria-live="polite">
+          <div class="loading-main">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <div>
+              <p class="section-label">Starting Host Console</p>
+              <h2>Checking host status...</h2>
+              <p class="panel-copy">This usually takes a moment.</p>
+            </div>
+          </div>
+          <div class="loading-next" aria-label="Next startup steps">
+            <p class="section-label">Next up</p>
+            <ol class="loading-steps">
+              <li>
+                <strong>Check host requirements</strong>
+                <span>Detect installed runtimes and browser access.</span>
+              </li>
+              <li>
+                <strong>Start the local bridge</strong>
+                <span>Prepare the local WebSocket stream for AO.</span>
+              </li>
+              <li>
+                <strong>Open AO with the bridge URL</strong>
+                <span>Hand off this session to anobservatory.com.</span>
+              </li>
+            </ol>
+          </div>
+        </section>
 
         <section class="panel panel-primary">
           <div class="current-step-main">

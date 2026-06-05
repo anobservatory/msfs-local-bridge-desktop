@@ -193,9 +193,14 @@ body.embedded-host::-webkit-scrollbar {
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 8px;
   align-items: start;
   align-content: start;
+}
+
+body.host-loading .layout {
+  align-items: stretch;
 }
 
 .panel {
@@ -209,6 +214,107 @@ body.embedded-host::-webkit-scrollbar {
 .panel-primary {
   padding-top: 10px;
   padding-bottom: 10px;
+}
+
+.loading-panel {
+  display: grid;
+  align-content: center;
+  gap: 22px;
+  min-height: 280px;
+}
+
+.loading-panel h2 {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  font-weight: 650;
+}
+
+.loading-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border: 3px solid rgba(150, 170, 192, 0.18);
+  border-top-color: var(--state-active);
+  border-radius: 50%;
+  animation: spin 800ms linear infinite;
+}
+
+.loading-next {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(150, 170, 192, 0.12);
+}
+
+.loading-steps {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding-left: 24px;
+  color: var(--text-primary);
+  font-size: 0.96rem;
+  line-height: 1.35;
+}
+
+.loading-steps li {
+  padding: 8px 0 10px;
+}
+
+.loading-steps li + li {
+  border-top: 1px solid rgba(150, 170, 192, 0.1);
+}
+
+.loading-steps li::marker {
+  color: var(--state-active);
+  font-weight: 700;
+}
+
+.loading-steps strong,
+.loading-steps span {
+  display: block;
+}
+
+.loading-steps strong {
+  font-weight: 650;
+}
+
+.loading-steps span {
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+body:not(.host-loading) .loading-panel {
+  display: none;
+}
+
+body:not(.host-loading) .loading-chip {
+  display: none;
+}
+
+body.host-loading #bridge-state-chip,
+body.host-loading #blocker-chip,
+body.host-loading #secure-chip {
+  display: none;
+}
+
+body.host-loading .panel-primary,
+body.host-loading .panel-tab {
+  display: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .current-step-main {

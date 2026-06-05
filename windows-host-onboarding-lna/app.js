@@ -124,6 +124,10 @@ function setActionButtonText(id, value) {
   }
 }
 
+function finishInitialLoading() {
+  document.body.classList.remove("host-loading");
+}
+
 function openDiagnosticsDrawer() {
   document.body.classList.add("drawer-open");
   diagnosticsDrawer?.setAttribute("aria-hidden", "false");
@@ -339,6 +343,8 @@ function openAoButtonLabel(state) {
 }
 
 function applyState(state) {
+  finishInitialLoading();
+
   const recommendation = getRecommendedAction(state);
   const connectionText = lnaConnectionText(state);
   const bridgeUrl = localBridgeUrl(state);
@@ -580,6 +586,7 @@ if (window.chrome?.webview) {
   for (const button of previewButtons) {
     button.classList.toggle("active", button.dataset.previewState === previewKey);
   }
+  finishInitialLoading();
   applyState(previewState);
 }
 
