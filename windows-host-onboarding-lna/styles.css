@@ -202,7 +202,7 @@ body.embedded-host::-webkit-scrollbar {
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
+  gap: var(--space-3);
   align-items: start;
   align-content: start;
 }
