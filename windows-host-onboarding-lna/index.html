@@ -18,15 +18,14 @@
           <div class="chip" id="bridge-state-chip">Stopped</div>
           <div class="chip" id="blocker-chip">2 blockers</div>
           <div class="chip chip-warn" id="secure-chip">Browser access needed</div>
+          <nav class="tabbar" aria-label="Host console views">
+            <button class="tab-button active" type="button" data-tab-target="setup">Setup</button>
+            <button class="tab-button" type="button" data-tab-target="access">Access</button>
+          </nav>
         </div>
       </header>
 
       <main class="layout">
-        <nav class="tabbar" aria-label="Host console views">
-          <button class="tab-button active" type="button" data-tab-target="setup">Setup</button>
-          <button class="tab-button" type="button" data-tab-target="access">Access</button>
-        </nav>
-
         <section class="panel loading-panel" aria-live="polite">
           <div class="loading-main">
             <div class="loading-spinner" aria-hidden="true"></div>
@@ -162,17 +161,41 @@
         </section>
 
         <section class="panel panel-tab panel-composite" id="listener-panel" data-ready="false" data-tab-panel="access" hidden>
-          <div class="panel-head">
-            <div>
-              <p class="section-label">Host Status And AO Access</p>
-              <h2>Operational snapshot and browser handoff</h2>
-            </div>
+          <div class="composite-topline">
+            <nav class="composite-tabbar" aria-label="Host status and AO access views" role="tablist">
+              <button
+                class="composite-tab-button active"
+                type="button"
+                data-composite-tab-target="host-status"
+                aria-controls="host-status-pane"
+                aria-selected="true"
+                role="tab"
+              >
+                Status
+              </button>
+              <button
+                class="composite-tab-button"
+                type="button"
+                data-composite-tab-target="open-ao"
+                aria-controls="open-ao-pane"
+                aria-selected="false"
+                role="tab"
+              >
+                Open AO
+              </button>
+            </nav>
             <div class="inline-state" id="listener-readiness-pill">Locked</div>
           </div>
           <div class="composite-stack">
-            <section class="composite-section">
+            <section
+              class="composite-section composite-pane active"
+              id="host-status-pane"
+              data-composite-tab-panel="host-status"
+              role="tabpanel"
+            >
               <div class="composite-head">
-                <p class="section-label">Host Status</p>
+                <p class="section-label">Status</p>
+                <h3 class="composite-title">Current host and browser access</h3>
               </div>
               <dl class="status-list">
                 <div class="status-row">
@@ -202,7 +225,13 @@
               </dl>
             </section>
 
-            <section class="composite-section composite-section-listener">
+            <section
+              class="composite-section composite-section-listener composite-pane"
+              id="open-ao-pane"
+              data-composite-tab-panel="open-ao"
+              role="tabpanel"
+              hidden
+            >
               <div class="composite-head composite-head-spread">
                 <div>
                   <p class="section-label">Open AO</p>

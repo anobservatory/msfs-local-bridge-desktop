@@ -2,6 +2,8 @@ const actionButtons = Array.from(document.querySelectorAll("[data-action]"));
 const previewButtons = Array.from(document.querySelectorAll("[data-preview-state]"));
 const tabButtons = Array.from(document.querySelectorAll("[data-tab-target]"));
 const tabPanels = Array.from(document.querySelectorAll("[data-tab-panel]"));
+const compositeTabButtons = Array.from(document.querySelectorAll("[data-composite-tab-target]"));
+const compositeTabPanels = Array.from(document.querySelectorAll("[data-composite-tab-panel]"));
 const previewSwitcher = document.getElementById("preview-switcher");
 const focusActionButton = document.getElementById("focus-action-button");
 const listenerPanel = document.getElementById("listener-panel");
@@ -40,6 +42,12 @@ for (const button of previewButtons) {
 for (const button of tabButtons) {
   button.addEventListener("click", () => {
     activateTab(button.dataset.tabTarget);
+  });
+}
+
+for (const button of compositeTabButtons) {
+  button.addEventListener("click", () => {
+    activateCompositeTab(button.dataset.compositeTabTarget);
   });
 }
 
@@ -275,6 +283,26 @@ function activateTab(target) {
 
   for (const panel of tabPanels) {
     const active = panel.dataset.tabPanel === target;
+    panel.classList.toggle("active", active);
+    panel.hidden = !active;
+  }
+
+  scheduleHostResize();
+}
+
+function activateCompositeTab(target) {
+  if (!target) {
+    return;
+  }
+
+  for (const button of compositeTabButtons) {
+    const active = button.dataset.compositeTabTarget === target;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+  }
+
+  for (const panel of compositeTabPanels) {
+    const active = panel.dataset.compositeTabPanel === target;
     panel.classList.toggle("active", active);
     panel.hidden = !active;
   }
