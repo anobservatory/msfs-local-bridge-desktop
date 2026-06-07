@@ -18,7 +18,7 @@ public partial class MainWindow : Window
     private const int WmDpiChangedMessage = 0x02E0;
     private const uint MonitorDefaultToNearest = 0x00000002;
     private const uint MonitorDefaultToPrimary = 0x00000001;
-    private const double FixedWindowWidth = 640;
+    private const double FixedWindowWidth = 600;
     private const double MinimumWindowWidth = 520;
     private const double MinimumWindowHeight = 420;
     private const double WindowContentChromeHeight = 42;
